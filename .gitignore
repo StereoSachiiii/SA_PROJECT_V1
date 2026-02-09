@@ -1,27 +1,38 @@
-# Compiled class files
+# Cotarget/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
 *.class
+.mvn/wrapper/maven-wrapper.properties
 
-# Maven
-target/
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
 
-# IDE
-.idea/
+### IntelliJ IDEA ###
+.idea
+*.iws
 *.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+
+### VS Code ###
 .vscode/
-*.swp
 
-# Logs
-*.log
-
-# Package Files
-*.jar
-*.war
-*.ear
-*.zip
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Worktrees
-frontend/
+### Frontend ###
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.DS_Store
