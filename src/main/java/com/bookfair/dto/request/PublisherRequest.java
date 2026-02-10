@@ -1,4 +1,4 @@
-package com.bookfair.dto;
+package com.bookfair.dto.request;
 
 import lombok.Data;
 

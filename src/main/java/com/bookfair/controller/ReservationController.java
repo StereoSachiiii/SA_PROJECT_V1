@@ -1,6 +1,6 @@
 package com.bookfair.controller;
 
-import com.bookfair.dto.ReservationRequest;
+import com.bookfair.dto.request.ReservationRequest;
 import com.bookfair.entity.Reservation;
 import com.bookfair.service.ReservationService;
 import lombok.RequiredArgsConstructor;

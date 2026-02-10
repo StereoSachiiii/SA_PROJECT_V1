@@ -1,6 +1,6 @@
 package com.bookfair.service;
 
-import com.bookfair.dto.GenreRequest;
+import com.bookfair.dto.request.GenreRequest;
 import com.bookfair.entity.Genre;
 import com.bookfair.entity.Publisher;
 import com.bookfair.repository.GenreRepository;

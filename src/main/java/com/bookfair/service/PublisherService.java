@@ -1,6 +1,6 @@
 package com.bookfair.service;
 
-import com.bookfair.dto.PublisherRequest;
+import com.bookfair.dto.request.PublisherRequest;
 import com.bookfair.entity.Publisher;
 import com.bookfair.repository.PublisherRepository;
 import lombok.RequiredArgsConstructor;
