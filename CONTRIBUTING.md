@@ -1,7 +1,8 @@
 # Team Collaboration Guide
 > Master reference for all team members. Read this FULLY before starting work.
+> make sure to continue working referring to the proposed API implementation. Make sure you are using
 
----
+
 
 ## 📋 Quick Reference
 
@@ -21,17 +22,19 @@
 
 ### Step 1: Clone the Repository
 ```bash
-git clone https://github.com/YOUR_USERNAME/SA_PROJECT.git
+git clone https://github.com/StereoSachiiii/SA_PROJECT.git
 cd SA_PROJECT
 ```
 
 ### Step 2: Switch to Your Branch
 **Backend developers:**
+ramesh, sachin, nihad
 ```bash
 git checkout backend
 ```
 
 **Frontend developers:**
+nethmi, anushka, dilum
 ```bash
 git checkout frontend
 ```
@@ -80,12 +83,7 @@ src/
 
 ## 👥 Team Assignments
 
-### Backend Team
-| Developer | Responsibility | Files |
-|-----------|----------------|-------|
-| **Dev 1** | Publisher + Stall | `PublisherController.java`, `StallController.java` |
-| **Dev 2** | Reservation + Email/QR | `ReservationController.java`, `EmailService.java`, `QrService.java` |
-| **Dev 3** | Genre + Employee Portal | `GenreController.java`, new endpoints for employee portal |
+### Backend team will have be using a private group.
 
 ### Frontend Team
 | Developer | Responsibility | Pages |
@@ -116,6 +114,8 @@ git add .
 git commit -m "Add: publication registration form"
 ```
 
+# MAKE SURE TO WRITE TESTS
+
 ### When Done for the Day
 ```bash
 git push origin backend    # or frontend
@@ -143,7 +143,7 @@ Update: change max stalls from 3 to 5
 
 ---
 
-## ⚠️ IMPORTANT RULES
+# ⚠️ IMPORTANT RULES(ALWAYS REMEMBER EVERYONE)
 
 ### DO ✅
 - Pull before starting work each day
@@ -177,42 +177,17 @@ git merge frontend
 git push origin main
 ```
 
----
 
-## 🧪 API Endpoints Reference
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/publishers` | Register new publisher |
-| GET | `/api/publishers/{id}` | Get publisher by ID |
-| GET | `/api/stalls` | Get all stalls |
-| GET | `/api/stalls/available` | Get available stalls |
-| POST | `/api/reservations` | Create reservation |
-| GET | `/api/reservations` | Get all reservations |
-| POST | `/api/genres` | Add genre |
-
----
 
 ## 🆘 Common Issues
 
-### "Permission denied" when pushing
-→ You haven't been added as collaborator. Ask project lead.
 
 ### "Merge conflict"
-→ Don't panic! Ask project lead for help.
+→ Don't panic! Ask sachin or nihad  for help, Although you don't have to always do the merging yourself.. just message sachin or nihad after commiting your changes to you branch then we will take a look.
+if your local repo has a bunch of commits that are small make sure to squash them before pushing to remote.. 
 
-### Backend won't start
-→ Check Java version: `java -version` (need 17+)
-
-### Frontend won't start
-→ Check Node version: `node -v` (need 18+)
-→ Try: `rm -rf node_modules && npm install`
 
 ---
 
-## 📞 Need Help?
+## make sure to make the code modular always push abstractions up and implementations down so we can switch things up easily. And yeah plz never force push to main.
 
-1. Check this guide first
-2. Google the error message
-3. Ask in group chat
-4. Contact project lead
