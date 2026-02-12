@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import { publisherApi } from '../api'
 import type { PublisherRequest } from '../types'
+import Input from '../components/Input'
 import './RegisterPage.css'
 
 function RegisterPage() {
@@ -17,14 +18,15 @@ function RegisterPage() {
     const mutation = useMutation({
         mutationFn: publisherApi.register,
         onSuccess: (data) => {
-            localStorage.setItem('publisherId', String(data.id)) //
+            // Save publisherId to localStorage for StallMapPage access
+            localStorage.setItem('publisherId', String(data.id))
             navigate('/stalls')
         },
     })
 
     const validate = () => {
         const newErrors: { [key: string]: string } = {}
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/ // Requirement check
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
         if (!form.businessName.trim()) newErrors.businessName = 'Business name is required'
         if (!form.contactPerson.trim()) newErrors.contactPerson = 'Contact person is required'
@@ -53,38 +55,30 @@ function RegisterPage() {
                 </header>
 
                 <form onSubmit={handleSubmit}>
-                    <div className="input-group">
-                        <label className="input-label">Business Name</label>
-                        <input
-                            type="text"
-                            value={form.businessName}
-                            onChange={(e) => handleChange('businessName', e.target.value)}
-                            className={`input-field ${errors.businessName ? 'input-field-error' : 'input-field-normal'}`}
-                        />
-                        {errors.businessName && <p className="error-message">{errors.businessName}</p>}
-                    </div>
+                    <Input
+                        label="Business Name"
+                        placeholder="e.g. Penguin Books"
+                        value={form.businessName}
+                        onChange={(e) => handleChange('businessName', e.target.value)}
+                        error={errors.businessName}
+                    />
 
-                    <div className="input-group">
-                        <label className="input-label">Email</label>
-                        <input
-                            type="email"
-                            value={form.email}
-                            onChange={(e) => handleChange('email', e.target.value)}
-                            className={`input-field ${errors.email ? 'input-field-error' : 'input-field-normal'}`}
-                        />
-                        {errors.email && <p className="error-message">{errors.email}</p>}
-                    </div>
+                    <Input
+                        label="Email Address"
+                        type="email"
+                        placeholder="contact@publisher.com"
+                        value={form.email}
+                        onChange={(e) => handleChange('email', e.target.value)}
+                        error={errors.email}
+                    />
 
-                    <div className="input-group">
-                        <label className="input-label">Contact Person</label>
-                        <input
-                            type="text"
-                            value={form.contactPerson}
-                            onChange={(e) => handleChange('contactPerson', e.target.value)}
-                            className={`input-field ${errors.contactPerson ? 'input-field-error' : 'input-field-normal'}`}
-                        />
-                        {errors.contactPerson && <p className="error-message">{errors.contactPerson}</p>}
-                    </div>
+                    <Input
+                        label="Contact Person"
+                        placeholder="Your full name"
+                        value={form.contactPerson}
+                        onChange={(e) => handleChange('contactPerson', e.target.value)}
+                        error={errors.contactPerson}
+                    />
 
                     <button type="submit" disabled={mutation.isPending} className="submit-button">
                         {mutation.isPending ? (
@@ -100,7 +94,8 @@ function RegisterPage() {
 
                     {mutation.isError && (
                         <div className="error-toast">
-                            <strong>Error:</strong> {(mutation.error as any)?.response?.data?.message || mutation.error.message}
+                            <span className="font-bold">Error:</span> 
+                            {(mutation.error as any)?.response?.data?.message || mutation.error.message}
                         </div>
                     )}
                 </form>
