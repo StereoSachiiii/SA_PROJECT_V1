@@ -1,6 +1,11 @@
-import { useQuery } from '@tanstack/react-query'
-import { stallApi, reservationApi, publisherApi } from '../api'
+/*import { useQuery } from '@tanstack/react-query'
+import { stallApi, reservationApi, publisherApi } from '../api' */
+
+import './EmployeePortal.css';
+
 import { useState } from 'react'
+import { MOCK_STALLS, MOCK_RESERVATIONS, MOCK_PUBLISHERS } from '../test/mockData';
+
 
 /**
  * Employee Portal Page
@@ -17,6 +22,12 @@ function EmployeePortalPage() {
     // Search State
     const [searchTerm, setSearchTerm] = useState("");
 
+    // Prototype Data (Mocking the useQuery calls)
+    const stalls = MOCK_STALLS;
+    const reservations = MOCK_RESERVATIONS;
+    const publishers = MOCK_PUBLISHERS;
+
+    /*
     const { data: stalls } = useQuery({
         queryKey: ['stalls'],
         queryFn: stallApi.getAll,
@@ -31,6 +42,7 @@ function EmployeePortalPage() {
         queryKey: ['publishers'],
         queryFn: publisherApi.getAll,
     })
+*/
 
     // Filter Logic: Filters by Publisher Name, Stall Name, or Email
     const filteredReservations = reservations?.filter(res =>
@@ -88,7 +100,9 @@ function EmployeePortalPage() {
                 </div>
             </div>
 
+
             {/* Reservations Table Section */}
+            
             <section className="mb-8 bg-white rounded-lg shadow overflow-hidden">
                 <div className="p-4 border-b flex flex-col md:flex-row justify-between items-center gap-4">
                     <h2 className="text-xl font-semibold text-gray-800">All Reservations</h2>
