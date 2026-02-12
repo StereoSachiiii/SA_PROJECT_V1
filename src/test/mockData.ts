@@ -6,6 +6,8 @@
  * without a running backend.
  */
 
+//For the Employee Portal
+
 export const MOCK_STALLS = [
     { id: 1, name: "A01", size: "Large", reserved: true },
     { id: 2, name: "A02", size: "Large", reserved: false },
@@ -63,4 +65,29 @@ export const MOCK_GENRES = [
     { id: 1, name: "Fiction", publisherId: 1 },
     { id: 2, name: "Educational", publisherId: 1 },
     { id: 3, name: "History", publisherId: 2 }
+];
+
+// For theStall Map Page, we can reuse MOCK_STALLS or create a more extensive map layout:
+
+export const MOCK_STALL_MAP_DATA = [
+    { id: 1, name: "A-01", size: "Large", reserved: true },
+    { id: 2, name: "A-02", size: "Large", reserved: false },
+    { id: 3, name: "A-03", size: "Large", reserved: false },
+    { id: 4, name: "A-04", size: "Large", reserved: true },
+    { id: 5, name: "B-01", size: "Medium", reserved: false },
+    { id: 6, name: "B-02", size: "Medium", reserved: false },
+    { id: 7, name: "B-03", size: "Medium", reserved: true },
+    { id: 8, name: "B-04", size: "Medium", reserved: false },
+    { id: 9, name: "C-01", size: "Small", reserved: false },
+    { id: 10, name: "C-02", size: "Small", reserved: false },
+    { id: 11, name: "C-03", size: "Small", reserved: false },
+    { id: 12, name: "C-04", size: "Small", reserved: false },
+    { id: 13, name: "D-01", size: "Medium", reserved: true },
+    { id: 14, name: "D-02", size: "Medium", reserved: false },
+    { id: 15, name: "D-03", size: "Medium", reserved: false },
+    { id: 16, name: "D-04", size: "Medium", reserved: true },
+    { id: 17, name: "E-01", size: "Large", reserved: false },
+    { id: 18, name: "E-02", size: "Large", reserved: false },
+    { id: 19, name: "E-03", size: "Large", reserved: false },
+    { id: 20, name: "E-04", size: "Large", reserved: false },
 ];
