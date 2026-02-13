@@ -43,13 +43,21 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
+        http.cors(cors -> {})
+            .csrf(AbstractHttpConfigurer::disable)
+            .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin())) // H2 console
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> 
                 auth.requestMatchers("/api/auth/**").permitAll()
-                    .requestMatchers("/api/stalls/available").permitAll() // Matches logic check
-                    .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                    .anyRequest().authenticated()
+                    .requestMatchers("/api/stalls/**").permitAll()
+                    .requestMatchers("/api/reservations/**").permitAll()
+                    .requestMatchers("/api/users/**").permitAll()
+                    .requestMatchers("/api/genres/**").permitAll()
+                    .requestMatchers("/api/employee/**").permitAll()
+                    .requestMatchers("/h2-console/**").permitAll()
+                    // TODO: Restrict endpoints once Login Page is implemented
+                    // .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                    .anyRequest().permitAll()
             );
 
         http.authenticationProvider(authenticationProvider());
