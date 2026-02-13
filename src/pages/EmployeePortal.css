@@ -1,0 +1,141 @@
+/* src/EmployeePortal.css */
+
+:root {
+  /* Color Palette based on Blue-Gray Monochromatic Theory */
+  --primary-bg: #f8fafc;        /* Soft White-Blue (Background) */
+  --secondary-bg: #ffffff;      /* Pure White (Cards/Table) */
+  --text-main: #1e293b;         /* Dark Slate (High Readability) */
+  --text-muted: #64748b;        /* Gray-Blue (Secondary Info) */
+  
+  /* Status Colors (Semantic Color Theory) */
+  --accent-blue: #2563eb;       /* Brand/Action color */
+  --success-green: #10b981;     /* Available/Positive */
+  --danger-red: #ef4444;        /* Reserved/Negative */
+  --border-color: #e2e8f0;      /* Light Divider color */
+}
+
+/* Base Layout */
+.portal-container {
+  background-color: var(--primary-bg);
+  min-height: 100vh;
+  color: var(--text-main);
+  padding: 2rem;
+}
+
+/* Typography */
+.portal-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 1.5rem;
+}
+
+/* Stats Cards Section - Uses Shadow and Rounded Borders for Depth */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: var(--secondary-bg);
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid var(--border-color);
+  transition: transform 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+
+.stat-value {
+  font-size: 1.875rem;
+  font-weight: 800;
+  margin-top: 0.25rem;
+}
+
+/* Specific Border Accents based on Status */
+.stat-card.available { border-left-color: var(--success-green); }
+.stat-card.reserved { border-left-color: var(--danger-red); }
+.stat-card.publishers { border-left-color: var(--accent-blue); }
+
+/* Table Styling - High Contrast for Readability */
+.registry-section {
+  background: var(--secondary-bg);
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.table-header {
+  padding: 1.25rem;
+  background-color: #f1f5f9;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.search-input {
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  width: 300px;
+}
+
+.export-btn {
+  background-color: var(--success-green);
+  color: white;
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.export-btn:hover {
+  opacity: 0.9;
+}
+
+/* Grid Map - Visual Hierarchy */
+.map-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.stall-node {
+  padding: 1rem 0.5rem;
+  border-radius: 0.5rem;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 2px solid transparent;
+}
+
+.stall-node.is-reserved {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+
+.stall-node.is-available {
+  background-color: #ecfdf5;
+  color: #065f46;
+  border-color: #d1fae5;
+}

@@ -1,0 +1,112 @@
+/* src/pages/StallMap.css */
+
+:root {
+  /* Analogous Color Palette for Sizes (Theory: Harmony & Organization) */
+  --small-stall-bg: #f0fdf4;    /* Light Green */
+  --small-stall-border: #4ade80; 
+  --medium-stall-bg: #eff6ff;   /* Light Blue */
+  --medium-stall-border: #60a5fa;
+  --large-stall-bg: #faf5ff;    /* Light Purple */
+  --large-stall-border: #c084fc;
+
+  /* Functional Colors (Theory: Semantic Clarity) */
+  --reserved-bg: #f1f5f9;       /* Slate Gray (Disabled state) */
+  --reserved-text: #94a3b8;
+  --selection-blue: #2563eb;    /* Primary Action */
+  --white: #ffffff;
+  --text-dark: #1e293b;
+}
+
+/* Container & Header Styling */
+.stall-map-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2.5rem;
+  background-color: #fafafa;
+}
+
+.map-header h1 {
+  font-size: 2.25rem;
+  color: var(--text-dark);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+
+/* The Grid Map Layout (5-Column Desktop Grid) */
+.stall-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1.5rem;
+  margin-top: 2rem;
+  padding-bottom: 8rem; /* Space for the floating action bar */
+}
+
+/* Stall Card Styling - Theory: Interactive Feedback */
+.stall-card {
+  height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid;
+  border-radius: 1rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  font-weight: 700;
+}
+
+/* Individual Size Styling */
+.stall-card.small { background: var(--small-stall-bg); border-color: var(--small-stall-border); color: #166534; }
+.stall-card.medium { background: var(--medium-stall-bg); border-color: var(--medium-stall-border); color: #1e40af; }
+.stall-card.large { background: var(--large-stall-bg); border-color: var(--large-stall-border); color: #6b21a8; }
+
+/* Reserved State - Theory: Desaturation for "Disabled" feel */
+.stall-card.reserved {
+  background: var(--reserved-bg);
+  border-color: #e2e8f0;
+  color: var(--reserved-text);
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+
+/* Selected State - Theory: High Value Contrast */
+.stall-card.selected {
+  background: var(--selection-blue);
+  border-color: #1d4ed8;
+  color: var(--white);
+  transform: scale(1.05);
+  box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+}
+
+/* Floating Action Bar - Theory: Visual Focus */
+.selection-bar {
+  position: fixed;
+  bottom: 2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--white);
+  padding: 1rem 2rem;
+  border-radius: 9999px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  z-index: 100;
+}
+
+.reserve-btn {
+  background: var(--selection-blue);
+  color: var(--white);
+  padding: 0.75rem 2rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.1s active;
+}
+
+.reserve-btn:active {
+  transform: scale(0.95);
+}
