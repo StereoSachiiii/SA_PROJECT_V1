@@ -3,16 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import { publisherApi } from '../api'
 import type { PublisherRequest } from '../types'
+import Input from '../components/Input'
+import './RegisterPage.css'
 
-/**
- * Registration Page
- * 
- * TODO [FRONTEND DEV 1]:
- * - Add form validation
- * - Add loading spinner during submission
- * - Style the form with Tailwind
- * - Store publisherId in localStorage/context after registration
- */
 function RegisterPage() {
     const navigate = useNavigate()
     const [form, setForm] = useState<PublisherRequest>({
@@ -20,72 +13,93 @@ function RegisterPage() {
         email: '',
         contactPerson: '',
     })
+    const [errors, setErrors] = useState<{ [key: string]: string }>({})
 
     const mutation = useMutation({
         mutationFn: publisherApi.register,
         onSuccess: (data) => {
-            // TODO: Store publisher ID for later use
+            // Save publisherId to localStorage for StallMapPage access
             localStorage.setItem('publisherId', String(data.id))
             navigate('/stalls')
         },
     })
 
+    const validate = () => {
+        const newErrors: { [key: string]: string } = {}
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+        if (!form.businessName.trim()) newErrors.businessName = 'Business name is required'
+        if (!form.contactPerson.trim()) newErrors.contactPerson = 'Contact person is required'
+        if (!form.email || !emailRegex.test(form.email)) newErrors.email = 'Valid email is required'
+
+        setErrors(newErrors)
+        return Object.keys(newErrors).length === 0
+    }
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
-        mutation.mutate(form)
+        if (validate()) mutation.mutate(form)
+    }
+
+    const handleChange = (field: keyof PublisherRequest, value: string) => {
+        setForm({ ...form, [field]: value })
+        if (errors[field]) setErrors({ ...errors, [field]: '' })
     }
 
     return (
-        <div className="flex items-center justify-center min-h-screen">
-            <form onSubmit={handleSubmit} className="bg-white p-8 rounded shadow-md w-96">
-                <h1 className="text-2xl font-bold mb-6 text-center">Publisher Registration</h1>
+        <div className="registration-container">
+            <div className="registration-card">
+                <header className="text-center mb-10">
+                    <h1 className="text-3xl font-black text-gray-900">Registration</h1>
+                    <p className="text-gray-500 mt-2 font-medium">Bookfair Stall Reservation</p>
+                </header>
 
-                {/* TODO: Add proper styling */}
-                <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1">Business Name</label>
-                    <input
-                        type="text"
+                <form onSubmit={handleSubmit}>
+                    <Input
+                        label="Business Name"
+                        placeholder="e.g. Penguin Books"
                         value={form.businessName}
-                        onChange={(e) => setForm({ ...form, businessName: e.target.value })}
-                        className="w-full border rounded px-3 py-2"
-                        required
+                        onChange={(e) => handleChange('businessName', e.target.value)}
+                        error={errors.businessName}
                     />
-                </div>
 
-                <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1">Email</label>
-                    <input
+                    <Input
+                        label="Email Address"
                         type="email"
+                        placeholder="contact@publisher.com"
                         value={form.email}
-                        onChange={(e) => setForm({ ...form, email: e.target.value })}
-                        className="w-full border rounded px-3 py-2"
-                        required
+                        onChange={(e) => handleChange('email', e.target.value)}
+                        error={errors.email}
                     />
-                </div>
 
-                <div className="mb-6">
-                    <label className="block text-sm font-medium mb-1">Contact Person</label>
-                    <input
-                        type="text"
+                    <Input
+                        label="Contact Person"
+                        placeholder="Your full name"
                         value={form.contactPerson}
-                        onChange={(e) => setForm({ ...form, contactPerson: e.target.value })}
-                        className="w-full border rounded px-3 py-2"
-                        required
+                        onChange={(e) => handleChange('contactPerson', e.target.value)}
+                        error={errors.contactPerson}
                     />
-                </div>
 
-                <button
-                    type="submit"
-                    disabled={mutation.isPending}
-                    className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-                >
-                    {mutation.isPending ? 'Registering...' : 'Register & Continue'}
-                </button>
+                    <button type="submit" disabled={mutation.isPending} className="submit-button">
+                        {mutation.isPending ? (
+                            <>
+                                <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span>Registering...</span>
+                            </>
+                        ) : 'Register & Continue'}
+                    </button>
 
-                {mutation.isError && (
-                    <p className="text-red-500 text-sm mt-2">Error: {mutation.error.message}</p>
-                )}
-            </form>
+                    {mutation.isError && (
+                        <div className="error-toast">
+                            <span className="font-bold">Error:</span> 
+                            {(mutation.error as any)?.response?.data?.message || mutation.error.message}
+                        </div>
+                    )}
+                </form>
+            </div>
         </div>
     )
 }
