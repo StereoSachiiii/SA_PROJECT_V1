@@ -5,6 +5,6 @@ import java.util.List;
 
 @Data
 public class ReservationRequest {
-    private Long publisherId;
+    private Long userId;
     private List<Long> stallIds;
 }

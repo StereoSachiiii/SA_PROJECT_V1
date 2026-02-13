@@ -7,6 +7,13 @@ import java.util.List;
 
 @Repository
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
-    List<Reservation> findByPublisherId(Long publisherId);
-    long countByPublisherId(Long publisherId);
+    @org.springframework.data.jpa.repository.Query("SELECT r FROM Reservation r JOIN FETCH r.stall JOIN FETCH r.user WHERE r.user.id = :userId")
+    List<Reservation> findByUserId(Long userId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT r FROM Reservation r JOIN FETCH r.stall JOIN FETCH r.user")
+    List<Reservation> findAll();
+    
+    java.util.Optional<Reservation> findByQrCode(String qrCode);
+    
+    long countByUserId(Long userId);
 }

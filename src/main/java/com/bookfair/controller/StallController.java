@@ -23,11 +23,13 @@ public class StallController {
     
     /**
      * GET /api/stalls
-     * Get all stalls (for map display)
+     * Get all stalls with optional filtering
      */
     @GetMapping
-    public ResponseEntity<List<Stall>> getAll() {
-        return ResponseEntity.ok(stallService.getAll());
+    public ResponseEntity<List<Stall>> getAll(
+            @RequestParam(required = false) String size,
+            @RequestParam(required = false) Boolean available) {
+        return ResponseEntity.ok(stallService.getAll(size, available));
     }
     
     /**

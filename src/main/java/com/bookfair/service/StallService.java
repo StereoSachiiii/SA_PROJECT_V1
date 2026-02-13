@@ -37,7 +37,14 @@ public class StallService {
         }
     }
     
-    public List<Stall> getAll() {
+    public List<Stall> getAll(String sizeStr, Boolean available) {
+        if (sizeStr != null && available != null) {
+            return stallRepository.findBySizeAndReserved(Stall.StallSize.valueOf(sizeStr.toUpperCase()), !available); // available=true means reserved=false
+        } else if (sizeStr != null) {
+            return stallRepository.findBySize(Stall.StallSize.valueOf(sizeStr.toUpperCase()));
+        } else if (available != null) {
+            return stallRepository.findByReserved(!available);
+        }
         return stallRepository.findAll();
     }
     

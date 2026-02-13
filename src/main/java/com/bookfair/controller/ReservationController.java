@@ -34,12 +34,12 @@ public class ReservationController {
     }
     
     /**
-     * GET /api/reservations/publisher/{publisherId}
-     * Get reservations for a specific publisher
+     * GET /api/reservations/user/{userId}
+     * Get reservations for a specific user
      */
-    @GetMapping("/publisher/{publisherId}")
-    public ResponseEntity<List<Reservation>> getByPublisher(@PathVariable Long publisherId) {
-        return ResponseEntity.ok(reservationService.getByPublisher(publisherId));
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Reservation>> getByUser(@PathVariable Long userId) {
+        return ResponseEntity.ok(reservationService.getByUser(userId));
     }
     
     /**

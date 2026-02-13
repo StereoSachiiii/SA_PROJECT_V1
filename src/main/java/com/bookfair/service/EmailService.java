@@ -24,9 +24,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class EmailService {
     
-    // TODO: Uncomment when implementing
     // private final JavaMailSender mailSender;
-    // private final QrService qrService;
+    private final QrService qrService;
     
     public void sendConfirmation(String toEmail, List<Reservation> reservations) {
         // TODO: Implement email sending
@@ -34,9 +33,16 @@ public class EmailService {
         System.out.println("=== EMAIL WOULD BE SENT ===");
         System.out.println("To: " + toEmail);
         System.out.println("Reservations: " + reservations.size());
-        reservations.forEach(r -> 
-            System.out.println("  - Stall: " + r.getStall().getName() + ", QR: " + r.getQrCode())
-        );
+        
+        reservations.forEach(r -> {
+            System.out.println("  - Stall: " + r.getStall().getName() + ", QR: " + r.getQrCode());
+            try {
+                byte[] qrImage = qrService.generateQrCode(r.getQrCode());
+                System.out.println("    [Mock Attachment] QR Code Image Generated: " + qrImage.length + " bytes");
+            } catch (Exception e) {
+                System.err.println("    [Error] Failed to generate QR: " + e.getMessage());
+            }
+        });
         System.out.println("===========================");
     }
 }

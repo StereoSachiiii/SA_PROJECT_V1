@@ -1,28 +1,25 @@
 package com.bookfair.service;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 import org.springframework.stereotype.Service;
 
-/**
- * QR Code Generation Service
- * 
- * TODO [BACKEND DEV 2]: Implement QR code generation using ZXing library
- * 
- * Steps:
- * 1. Add method: byte[] generateQrCode(String content)
- * 2. Use ZXing's QRCodeWriter to create QR code
- * 3. Return as PNG byte array
- * 
- * Example:
- *   QRCodeWriter writer = new QRCodeWriter();
- *   BitMatrix matrix = writer.encode(content, BarcodeFormat.QR_CODE, 200, 200);
- *   BufferedImage image = MatrixToImageWriter.toBufferedImage(matrix);
- */
+import java.io.ByteArrayOutputStream;
+
 @Service
 public class QrService {
     
     public byte[] generateQrCode(String content) {
-        // TODO: Implement QR generation
-        // See: https://github.com/zxing/zxing
-        return new byte[0];
+        try {
+            QRCodeWriter writer = new QRCodeWriter();
+            BitMatrix matrix = writer.encode(content, BarcodeFormat.QR_CODE, 200, 200);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            MatrixToImageWriter.writeToStream(matrix, "PNG", outputStream);
+            return outputStream.toByteArray();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to generate QR code", e);
+        }
     }
 }
