@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class GenreRequest {
-    private Long publisherId;
+    private Long userId;
     private String name;
 }

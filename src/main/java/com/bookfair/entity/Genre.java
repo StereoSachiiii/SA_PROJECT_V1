@@ -20,6 +20,6 @@ public class Genre {
     private String name;
     
     @ManyToOne
-    @JoinColumn(name = "publisher_id", nullable = false)
-    private Publisher publisher;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 }
