@@ -1,11 +1,17 @@
 package com.bookfair.service;
 
 import com.bookfair.entity.Reservation;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.util.ByteArrayDataSource;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Email Notification Service
@@ -23,26 +29,40 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class EmailService {
-    
-    // private final JavaMailSender mailSender;
+
+    private final TemplateEngine templateEngine;
+    private final JavaMailSender mailSender;
     private final QrService qrService;
     
     public void sendConfirmation(String toEmail, List<Reservation> reservations) {
-        // TODO: Implement email sending
-        // For now, just log
-        System.out.println("=== EMAIL WOULD BE SENT ===");
-        System.out.println("To: " + toEmail);
-        System.out.println("Reservations: " + reservations.size());
-        
-        reservations.forEach(r -> {
-            System.out.println("  - Stall: " + r.getStall().getName() + ", QR: " + r.getQrCode());
-            try {
-                byte[] qrImage = qrService.generateQrCode(r.getQrCode());
-                System.out.println("    [Mock Attachment] QR Code Image Generated: " + qrImage.length + " bytes");
-            } catch (Exception e) {
-                System.err.println("    [Error] Failed to generate QR: " + e.getMessage());
-            }
-        });
-        System.out.println("===========================");
+       try {
+           Context context = new Context();
+           context.setVariable("reservations", reservations);
+
+           String html = templateEngine.process("confirmation", context);
+
+           String qrData = "Reservations: " + reservations.stream()
+                   .map(res -> res.getStall().getName())
+                   .collect(Collectors.joining(", "));
+
+
+           MimeMessage mimeMessage = mailSender.createMimeMessage();
+
+           MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage);
+
+           mimeMessageHelper.setTo(toEmail);
+
+
+           mimeMessageHelper.setSubject("Book Fair Reservation Confirmation");
+
+           mimeMessageHelper.setText(html, true);
+
+           byte[] qrBytes = qrService.generateQrCode(qrData);
+           mimeMessageHelper.addInline("qrCode", new ByteArrayDataSource(qrBytes, "image/png"));
+
+           mailSender.send(mimeMessage);
+       } catch (Exception e) {
+           throw new RuntimeException("Failed to send email", e);
+       }
     }
 }

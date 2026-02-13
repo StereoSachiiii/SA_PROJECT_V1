@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f4f4;">
+<div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 20px auto; background-color: #ffffff; padding: 30px; border-radius: 8px; border: 1px solid #ddd;">
+
+    <h2 style="color: #2c3e50; text-align: center; margin-bottom: 20px;">Reservation Confirmed</h2>
+
+    <p style="color: #34495e;">Hello,</p>
+    <p style="color: #34495e;">Your booking for the Book Fair has been successfully processed. Here are your stall details:</p>
+
+    <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+        <thead>
+        <tr style="background-color: #f8f9fa;">
+            <th style="text-align: left; padding: 12px; border-bottom: 2px solid #dee2e6;">Stall</th>
+            <th style="text-align: right; padding: 12px; border-bottom: 2px solid #dee2e6;">Reference ID</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="res : ${reservations}">
+            <td style="padding: 12px; border-bottom: 1px solid #eee; color: #2c3e50; font-weight: bold;" th:text="${res.stall.name}">Stall Name</td>
+            <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: right; color: #7f8c8d;" th:text="${'RES-' + res.id}">ID</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div style="text-align: center; margin-top: 30px; padding: 20px; background-color: #fffaf0; border: 1px dashed #f39c12; border-radius: 5px;">
+        <p style="margin-bottom: 15px; color: #e67e22; font-weight: bold;">Entrance Pass</p>
+        <img src="cid:qrCode" width="200" height="200" style="display: block; margin: 0 auto;" alt="QR Code" />
+        <p style="font-size: 12px; color: #95a5a6; margin-top: 10px;">Show this QR at the gate for entry.</p>
+    </div>
+
+    <p style="text-align: center; font-size: 12px; color: #bdc3c7; margin-top: 30px;">
+        Thank you for being part of the Book Fair! <br/>
+        © 2026 Book Fair Management
+    </p>
+</div>
+</body>
+</html>
