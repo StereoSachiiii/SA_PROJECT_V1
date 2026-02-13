@@ -1,8 +1,8 @@
 package com.bookfair.service;
 
-import com.bookfair.dto.request.PublisherRequest;
-import com.bookfair.entity.Publisher;
-import com.bookfair.repository.PublisherRepository;
+import com.bookfair.dto.request.UserRequest;
+import com.bookfair.entity.User;
+import com.bookfair.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -10,24 +10,33 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class PublisherService {
+public class UserService {
     
-    private final PublisherRepository publisherRepository;
+    private final UserRepository userRepository;
     
-    public Publisher register(PublisherRequest request) {
-        Publisher publisher = new Publisher();
-        publisher.setBusinessName(request.getBusinessName());
-        publisher.setEmail(request.getEmail());
-        publisher.setContactPerson(request.getContactPerson());
-        return publisherRepository.save(publisher);
+    public User createUser(UserRequest request) {
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        user.setPassword(request.getPassword()); // TODO: Encode password
+        user.setRole(request.getRole());
+        user.setBusinessName(request.getBusinessName());
+        user.setContactNumber(request.getContactNumber());
+        user.setAddress(request.getAddress());
+        return userRepository.save(user);
     }
     
-    public Publisher getById(Long id) {
-        return publisherRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Publisher not found"));
+    public User getById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
     
-    public List<Publisher> getAll() {
-        return publisherRepository.findAll();
+    public User getByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+    
+    public List<User> getAll() {
+        return userRepository.findAll();
     }
 }

@@ -32,11 +32,11 @@ public class GenreController {
     }
     
     /**
-     * GET /api/genres/publisher/{publisherId}
-     * Get all genres for a publisher
+     * GET /api/genres/user/{userId}
+     * Get all genres for a user
      */
-    @GetMapping("/publisher/{publisherId}")
-    public ResponseEntity<List<Genre>> getByPublisher(@PathVariable Long publisherId) {
-        return ResponseEntity.ok(genreService.getByPublisher(publisherId));
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Genre>> getByUser(@PathVariable Long userId) {
+        return ResponseEntity.ok(genreService.getByUser(userId));
     }
 }

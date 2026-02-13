@@ -1,8 +1,8 @@
 package com.bookfair.controller;
 
-import com.bookfair.dto.request.PublisherRequest;
-import com.bookfair.entity.Publisher;
-import com.bookfair.service.PublisherService;
+import com.bookfair.dto.request.UserRequest;
+import com.bookfair.entity.User;
+import com.bookfair.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,43 +10,41 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * Publisher Controller
+ * User Controller
  * 
- * TODO [BACKEND DEV 1]: Add validation
- * - Use @Valid annotation
- * - Add validation annotations to DTO (@NotBlank, @Email, etc.)
+ * Handles User management operations.
  */
 @RestController
-@RequestMapping("/api/publishers")
+@RequestMapping("/api/users")
 @RequiredArgsConstructor
-public class PublisherController {
+public class UserController {
     
-    private final PublisherService publisherService;
+    private final UserService userService;
     
     /**
-     * POST /api/publishers
-     * Register a new publisher/vendor
+     * POST /api/users
+     * Create a new user (admin/vendor)
      */
     @PostMapping
-    public ResponseEntity<Publisher> register(@RequestBody PublisherRequest request) {
-        return ResponseEntity.ok(publisherService.register(request));
+    public ResponseEntity<User> createUser(@RequestBody UserRequest request) {
+        return ResponseEntity.ok(userService.createUser(request));
     }
     
     /**
-     * GET /api/publishers/{id}
-     * Get publisher by ID
+     * GET /api/users/{id}
+     * Get user by ID
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Publisher> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(publisherService.getById(id));
+    public ResponseEntity<User> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.getById(id));
     }
     
     /**
-     * GET /api/publishers
-     * Get all publishers (for employee portal)
+     * GET /api/users
+     * Get all users (for admin portal)
      */
     @GetMapping
-    public ResponseEntity<List<Publisher>> getAll() {
-        return ResponseEntity.ok(publisherService.getAll());
+    public ResponseEntity<List<User>> getAll() {
+        return ResponseEntity.ok(userService.getAll());
     }
 }
