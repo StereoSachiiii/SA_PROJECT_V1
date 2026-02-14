@@ -28,11 +28,19 @@ public class UserService {
     }
     
     public User getByIdForServices(Long id) {
+
+        if (id == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
     public UserResponse getById(Long id) {
+        
+        if (id == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
         return userRepository.findById(id)
                 .map(this::mapToUserResponse)
                 .orElseThrow(() -> new RuntimeException("User not found"));

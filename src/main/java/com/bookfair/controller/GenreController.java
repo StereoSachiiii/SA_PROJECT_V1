@@ -2,7 +2,6 @@ package com.bookfair.controller;
 
 import com.bookfair.dto.request.GenreRequest;
 import com.bookfair.dto.response.GenreResponse;
-import com.bookfair.entity.Genre;
 import com.bookfair.service.GenreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

@@ -3,6 +3,7 @@ package com.bookfair.service;
 import com.bookfair.dto.response.StallResponse;
 import com.bookfair.entity.Stall;
 import com.bookfair.repository.StallRepository;
+
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -54,7 +55,12 @@ public class StallService {
         return stallRepository.findByReservedFalse().stream().map(this::mapToStallResponse).toList();
     }
     
-    public StallResponse getById(Long id) {
+    public StallResponse getById(Long id) { 
+        
+        if (id == null) {
+            throw new IllegalArgumentException("Stall ID cannot be null");
+        }
+
         return mapToStallResponse(stallRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Stall not found")));
     }
