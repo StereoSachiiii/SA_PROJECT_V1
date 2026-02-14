@@ -7,12 +7,18 @@ import lombok.AllArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.List;
 
+<<<<<<< HEAD
 /**
  * Represents a registered user — either a VENDOR (book publisher) or ADMIN (employee/organizer).
  *
  * Vendors register via the online portal and can reserve up to 3 stalls.
  * Admins access the employee-only portal to view reservations and stall availability.
  */
+=======
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+>>>>>>> origin/backend-feature-nihadh
 @Entity
 @Table(name = "users", indexes = {
     @Index(name = "idx_users_username", columnList = "username"),
@@ -48,10 +54,16 @@ public class User {
     
     private String address;
 
+    @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
+<<<<<<< HEAD
     private LocalDateTime updatedAt;
+=======
+    @UpdateTimestamp
+    private LocalDateTime updatedAt = LocalDateTime.now();
+>>>>>>> origin/backend-feature-nihadh
     
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @com.fasterxml.jackson.annotation.JsonIgnore

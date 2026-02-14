@@ -1,0 +1,370 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------------< com.bookfair:stall-reservation-api >-----------------
+[INFO] Building Bookfair Stall Reservation API 1.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.3.2:clean (default-clean) @ stall-reservation-api ---
+[INFO] Deleting C:\Users\User\SA_PROJECT\target
+[INFO] 
+[INFO] >>> spring-boot:3.2.0:run (default-cli) > test-compile @ stall-reservation-api >>>
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ stall-reservation-api ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ stall-reservation-api ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 38 source files with javac [debug parameters release 17] to target\classes
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by lombok.permit.Permit
+WARNING: Please consider reporting this to the maintainers of class lombok.permit.Permit
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ stall-reservation-api ---
+[INFO] skip non existing resourceDirectory C:\Users\User\SA_PROJECT\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ stall-reservation-api ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] <<< spring-boot:3.2.0:run (default-cli) < test-compile @ stall-reservation-api <<<
+[INFO] 
+[INFO] 
+[INFO] --- spring-boot:3.2.0:run (default-cli) @ stall-reservation-api ---
+[INFO] Attaching agents: []
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.0)
+
+2026-02-14T22:55:44.510+05:30  INFO 21092 --- [           main] com.bookfair.BookfairApplication         : Starting BookfairApplication using Java 25.0.1 with PID 21092 (C:\Users\User\SA_PROJECT\target\classes started by User in C:\Users\User\SA_PROJECT)
+2026-02-14T22:55:44.512+05:30  INFO 21092 --- [           main] com.bookfair.BookfairApplication         : No active profile set, falling back to 1 default profile: "default"
+2026-02-14T22:55:44.892+05:30  INFO 21092 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-02-14T22:55:44.946+05:30  INFO 21092 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 48 ms. Found 4 JPA repository interfaces.
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.apache.tomcat.jni.Library in an unnamed module (file:/C:/Users/User/.m2/repository/org/apache/tomcat/embed/tomcat-embed-core/10.1.16/tomcat-embed-core-10.1.16.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+2026-02-14T22:55:45.288+05:30  INFO 21092 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-02-14T22:55:45.293+05:30  INFO 21092 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-02-14T22:55:45.293+05:30  INFO 21092 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.16]
+2026-02-14T22:55:45.328+05:30  INFO 21092 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-02-14T22:55:45.329+05:30  INFO 21092 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 787 ms
+2026-02-14T22:55:45.415+05:30  INFO 21092 --- [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-02-14T22:55:45.445+05:30  INFO 21092 --- [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.3.1.Final
+2026-02-14T22:55:45.469+05:30  INFO 21092 --- [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-02-14T22:55:45.628+05:30  INFO 21092 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-02-14T22:55:45.643+05:30  INFO 21092 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-02-14T22:55:45.755+05:30  INFO 21092 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@3360283
+2026-02-14T22:55:45.755+05:30  INFO 21092 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-02-14T22:55:45.775+05:30  WARN 21092 --- [           main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-02-14T22:55:46.434+05:30  INFO 21092 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+Hibernate: 
+    create table genres (
+        id bigserial not null,
+        name varchar(255) not null,
+        user_id bigint not null,
+        primary key (id)
+    )
+Hibernate: 
+    create table reservations (
+        id bigserial not null,
+        created_at timestamp(6) not null,
+        email_sent boolean not null,
+        qr_code varchar(255) not null,
+        status varchar(255) not null check (status in ('CONFIRMED','CANCELLED')),
+        stall_id bigint not null,
+        user_id bigint not null,
+        primary key (id)
+    )
+Hibernate: 
+    create table stalls (
+        id bigserial not null,
+        col_span integer not null,
+        height integer not null,
+        name varchar(255) not null,
+        positionx integer not null,
+        positiony integer not null,
+        price_cents integer,
+        row_span integer not null,
+        size varchar(255) not null check (size in ('SMALL','MEDIUM','LARGE')),
+        width integer not null,
+        primary key (id)
+    )
+Hibernate: 
+    create table users (
+        id bigserial not null,
+        address varchar(255),
+        business_name varchar(255),
+        contact_number varchar(255),
+        created_at timestamp(6),
+        email varchar(255) not null,
+        password varchar(255) not null,
+        role varchar(255) not null check (role in ('ADMIN','VENDOR')),
+        updated_at timestamp(6),
+        username varchar(255) not null,
+        primary key (id)
+    )
+Hibernate: 
+    create index idx_reservations_user 
+       on reservations (user_id)
+Hibernate: 
+    create index idx_reservations_stall 
+       on reservations (stall_id)
+Hibernate: 
+    create index idx_reservations_status 
+       on reservations (status)
+Hibernate: 
+    create index idx_reservations_qr 
+       on reservations (qr_code)
+Hibernate: 
+    alter table if exists reservations 
+       drop constraint if exists UK_loyex9w895o5ktgqo1vbidhyf
+2026-02-14T22:55:46.533+05:30  WARN 21092 --- [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : SQL Warning Code: 0, SQLState: 00000
+2026-02-14T22:55:46.533+05:30  WARN 21092 --- [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : constraint "uk_loyex9w895o5ktgqo1vbidhyf" of relation "reservations" does not exist, skipping
+Hibernate: 
+    alter table if exists reservations 
+       add constraint UK_loyex9w895o5ktgqo1vbidhyf unique (qr_code)
+Hibernate: 
+    create index idx_stalls_position 
+       on stalls (positionx, positiony)
+Hibernate: 
+    create index idx_stalls_name 
+       on stalls (name)
+Hibernate: 
+    alter table if exists stalls 
+       drop constraint if exists UK_hv7pw67q246j60mjgtlpyn6j9
+2026-02-14T22:55:46.537+05:30  WARN 21092 --- [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : SQL Warning Code: 0, SQLState: 00000
+2026-02-14T22:55:46.537+05:30  WARN 21092 --- [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : constraint "uk_hv7pw67q246j60mjgtlpyn6j9" of relation "stalls" does not exist, skipping
+Hibernate: 
+    alter table if exists stalls 
+       add constraint UK_hv7pw67q246j60mjgtlpyn6j9 unique (name)
+Hibernate: 
+    create index idx_users_username 
+       on users (username)
+Hibernate: 
+    create index idx_users_email 
+       on users (email)
+Hibernate: 
+    create index idx_users_business 
+       on users (business_name)
+Hibernate: 
+    alter table if exists users 
+       drop constraint if exists UK_6dotkott2kjsp8vw4d0m25fb7
+2026-02-14T22:55:46.541+05:30  WARN 21092 --- [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : SQL Warning Code: 0, SQLState: 00000
+2026-02-14T22:55:46.541+05:30  WARN 21092 --- [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : constraint "uk_6dotkott2kjsp8vw4d0m25fb7" of relation "users" does not exist, skipping
+Hibernate: 
+    alter table if exists users 
+       add constraint UK_6dotkott2kjsp8vw4d0m25fb7 unique (email)
+Hibernate: 
+    alter table if exists users 
+       drop constraint if exists UK_r43af9ap4edm43mmtq01oddj6
+2026-02-14T22:55:46.542+05:30  WARN 21092 --- [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : SQL Warning Code: 0, SQLState: 00000
+2026-02-14T22:55:46.542+05:30  WARN 21092 --- [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : constraint "uk_r43af9ap4edm43mmtq01oddj6" of relation "users" does not exist, skipping
+Hibernate: 
+    alter table if exists users 
+       add constraint UK_r43af9ap4edm43mmtq01oddj6 unique (username)
+Hibernate: 
+    alter table if exists genres 
+       add constraint FKh0lfmxar2oug5vidw54idwskp 
+       foreign key (user_id) 
+       references users
+Hibernate: 
+    alter table if exists reservations 
+       add constraint FKssfobrypfqb8yoby9sxxd5ivc 
+       foreign key (stall_id) 
+       references stalls
+Hibernate: 
+    alter table if exists reservations 
+       add constraint FKb5g9io5h54iwl2inkno50ppln 
+       foreign key (user_id) 
+       references users
+2026-02-14T22:55:46.551+05:30  INFO 21092 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-02-14T22:55:46.817+05:30  INFO 21092 --- [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+Hibernate: 
+    select
+        count(*) 
+    from
+        stalls s1_0
+Hibernate: 
+    insert 
+    into
+        stalls
+        (col_span, height, name, positionx, positiony, price_cents, row_span, size, width) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        stalls
+        (col_span, height, name, positionx, positiony, price_cents, row_span, size, width) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        stalls
+        (col_span, height, name, positionx, positiony, price_cents, row_span, size, width) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        stalls
+        (col_span, height, name, positionx, positiony, price_cents, row_span, size, width) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        stalls
+        (col_span, height, name, positionx, positiony, price_cents, row_span, size, width) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        stalls
+        (col_span, height, name, positionx, positiony, price_cents, row_span, size, width) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        stalls
+        (col_span, height, name, positionx, positiony, price_cents, row_span, size, width) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        stalls
+        (col_span, height, name, positionx, positiony, price_cents, row_span, size, width) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        stalls
+        (col_span, height, name, positionx, positiony, price_cents, row_span, size, width) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        stalls
+        (col_span, height, name, positionx, positiony, price_cents, row_span, size, width) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        stalls
+        (col_span, height, name, positionx, positiony, price_cents, row_span, size, width) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        stalls
+        (col_span, height, name, positionx, positiony, price_cents, row_span, size, width) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        stalls
+        (col_span, height, name, positionx, positiony, price_cents, row_span, size, width) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        stalls
+        (col_span, height, name, positionx, positiony, price_cents, row_span, size, width) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        stalls
+        (col_span, height, name, positionx, positiony, price_cents, row_span, size, width) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        stalls
+        (col_span, height, name, positionx, positiony, price_cents, row_span, size, width) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        stalls
+        (col_span, height, name, positionx, positiony, price_cents, row_span, size, width) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        stalls
+        (col_span, height, name, positionx, positiony, price_cents, row_span, size, width) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        stalls
+        (col_span, height, name, positionx, positiony, price_cents, row_span, size, width) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+Hibernate: 
+    insert 
+    into
+        stalls
+        (col_span, height, name, positionx, positiony, price_cents, row_span, size, width) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-02-14T22:55:47.216+05:30  WARN 21092 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-02-14T22:55:47.359+05:30  INFO 21092 --- [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@56b4951a, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@2d58136, org.springframework.security.web.context.SecurityContextHolderFilter@5b34e7bd, org.springframework.security.web.header.HeaderWriterFilter@4d2068ea, org.springframework.web.filter.CorsFilter@48788853, org.springframework.security.web.authentication.logout.LogoutFilter@2c7fff1b, com.bookfair.security.JwtAuthenticationFilter@5cf1bbd3, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@3f29e67e, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@16d4757f, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@173a86ad, org.springframework.security.web.session.SessionManagementFilter@7c9a0166, org.springframework.security.web.access.ExceptionTranslationFilter@633aedeb, org.springframework.security.web.access.intercept.AuthorizationFilter@2daf2351]
+2026-02-14T22:55:47.488+05:30  INFO 21092 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path ''
+2026-02-14T22:55:47.493+05:30  INFO 21092 --- [           main] com.bookfair.BookfairApplication         : Started BookfairApplication in 3.193 seconds (process running for 3.403)
+2026-02-14T22:57:40.600+05:30  INFO 21092 --- [nio-8080-exec-2] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-02-14T22:57:40.600+05:30  INFO 21092 --- [nio-8080-exec-2] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-02-14T22:57:40.600+05:30  INFO 21092 --- [nio-8080-exec-2] o.s.web.servlet.DispatcherServlet        : Completed initialization in 0 ms
+2026-02-14T22:57:40.611+05:30  WARN 21092 --- [nio-8080-exec-2] o.s.w.s.h.HandlerMappingIntrospector     : Cache miss for REQUEST dispatch to '/api/stalls' (previous null). Performing MatchableHandlerMapping lookup. This is logged once only at WARN level, and every time at TRACE.
+Hibernate: 
+    select
+        s1_0.id,
+        s1_0.col_span,
+        s1_0.height,
+        s1_0.name,
+        s1_0.positionx,
+        s1_0.positiony,
+        s1_0.price_cents,
+        s1_0.row_span,
+        s1_0.size,
+        s1_0.width 
+    from
+        stalls s1_0
+Hibernate: 
+    select
+        s1_0.id,
+        s1_0.col_span,
+        s1_0.height,
+        s1_0.name,
+        s1_0.positionx,
+        s1_0.positiony,
+        s1_0.price_cents,
+        s1_0.row_span,
+        s1_0.size,
+        s1_0.width 
+    from
+        stalls s1_0

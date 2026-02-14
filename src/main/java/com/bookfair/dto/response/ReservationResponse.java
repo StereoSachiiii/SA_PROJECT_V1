@@ -7,20 +7,25 @@ import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
+@AllArgsConstructor 
 public class ReservationResponse {
     private Long id;
     private String qrCode;
-    private String status;
     private LocalDateTime createdAt;
 
-    // Flattened publisher info
     private Long publisherId;
     private String businessName;
 
-    // Flattened stall info
     private Long stallId;
     private String stallName;
     private String stallSize;
-    private Integer priceCents;
+
+    // @Data
+    // @NoArgsConstructor
+    // @AllArgsConstructor
+    // public static class ReservedStallInfo {
+    //     private Long stallId;
+    //     private String stallName; 
+    //     private String stallSize;
+    // }
 }

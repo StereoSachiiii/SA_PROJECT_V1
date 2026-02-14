@@ -1,7 +1,7 @@
 package com.bookfair.controller;
 
 import com.bookfair.dto.request.GenreRequest;
-import com.bookfair.entity.Genre;
+import com.bookfair.dto.response.GenreResponse;
 import com.bookfair.service.GenreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +27,7 @@ public class GenreController {
      * Add a genre to publisher's listing
      */
     @PostMapping
-    public ResponseEntity<Genre> addGenre(@RequestBody GenreRequest request) {
+    public ResponseEntity<GenreResponse> addGenre(@RequestBody GenreRequest request) {
         return ResponseEntity.ok(genreService.addGenre(request));
     }
     
@@ -36,7 +36,7 @@ public class GenreController {
      * Get all genres for a user
      */
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Genre>> getByUser(@PathVariable Long userId) {
+    public ResponseEntity<List<GenreResponse>> getByUser(@PathVariable Long userId) {
         return ResponseEntity.ok(genreService.getByUser(userId));
     }
 }

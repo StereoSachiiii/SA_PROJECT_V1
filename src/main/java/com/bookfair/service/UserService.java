@@ -1,6 +1,7 @@
 package com.bookfair.service;
 
 import com.bookfair.dto.request.UserRequest;
+import com.bookfair.dto.response.UserResponse;
 import com.bookfair.entity.User;
 import com.bookfair.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -45,17 +46,50 @@ public class UserService {
         return userRepository.save(user);
     }
     
-    public User getById(Long id) {
+    public User getByIdForServices(Long id) {
+
+        if (id == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
-    
-    public User getByUsername(String username) {
-        return userRepository.findByUsername(username)
+
+    public UserResponse getById(Long id) {
+        
+        if (id == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
+        return userRepository.findById(id)
+                .map(this::mapToUserResponse)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
     
-    public List<User> getAll() {
-        return userRepository.findAll();
+    public UserResponse getByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .map(this::mapToUserResponse)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+    
+    public List<UserResponse> getAll() {
+        List<User> users = userRepository.findAll();
+        return users.stream().map(this::mapToUserResponse).toList();
+    }
+
+    public User getByUsernameForServices(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    private UserResponse mapToUserResponse(User user) {
+        return new UserResponse(
+            user.getId(),
+            user.getUsername(),
+            user.getEmail(),
+            user.getRole().name(),
+            user.getBusinessName(),
+            user.getContactNumber(),
+            user.getAddress()
+        );
     }
 }

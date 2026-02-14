@@ -6,6 +6,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
+<<<<<<< HEAD
+=======
+import org.springframework.lang.NonNull;
+>>>>>>> origin/backend-feature-nihadh
 
 /**
  * Repository for reservation queries.
@@ -18,6 +22,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     @Query("SELECT r FROM Reservation r JOIN FETCH r.stall JOIN FETCH r.user WHERE r.user.id = :userId")
     List<Reservation> findByUserId(Long userId);
 
+<<<<<<< HEAD
     /** Find all reservations (with stall and user data eager-loaded). */
     @Query("SELECT r FROM Reservation r JOIN FETCH r.stall JOIN FETCH r.user")
     List<Reservation> findAll();
@@ -32,4 +37,15 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     /** Check if a stall already has a confirmed reservation. */
     @Query("SELECT COUNT(r) > 0 FROM Reservation r WHERE r.stall.id = :stallId AND r.status = 'CONFIRMED'")
     boolean isStallReserved(Long stallId);
+=======
+    @Override
+    @NonNull
+    @org.springframework.data.jpa.repository.Query("SELECT r FROM Reservation r JOIN FETCH r.stall JOIN FETCH r.user")
+    List<Reservation> findAll();
+    
+    Optional<Reservation> findByQrCode(String qrCode);
+    
+    long countByUserId(Long userId);
+
+>>>>>>> origin/backend-feature-nihadh
 }

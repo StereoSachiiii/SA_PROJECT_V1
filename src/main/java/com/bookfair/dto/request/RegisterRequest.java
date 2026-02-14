@@ -1,12 +1,20 @@
 package com.bookfair.dto.request;
 
+import com.bookfair.entity.User.Role;
+
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class RegisterRequest {
-    private String businessName;
+    private String username;
     private String email;
-    private String contactPerson;
     private String password;
-    private String phone;
+    private Role role;
+    private String address;
+    private String contactNumber;
+    private String businessName;
 }
