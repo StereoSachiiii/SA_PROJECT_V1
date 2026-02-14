@@ -1,6 +1,7 @@
 package com.bookfair.controller;
 
 import com.bookfair.dto.request.UserRequest;
+import com.bookfair.dto.response.UserResponse;
 import com.bookfair.entity.User;
 import com.bookfair.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +36,7 @@ public class UserController {
      * Get user by ID
      */
     @GetMapping("/{id}")
-    public ResponseEntity<User> getById(@PathVariable Long id) {
+    public ResponseEntity<UserResponse> getById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getById(id));
     }
     
@@ -44,7 +45,7 @@ public class UserController {
      * Get all users (for admin portal)
      */
     @GetMapping
-    public ResponseEntity<List<User>> getAll() {
+    public ResponseEntity<List<UserResponse>> getAll() {
         return ResponseEntity.ok(userService.getAll());
     }
 }

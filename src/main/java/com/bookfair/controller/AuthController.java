@@ -1,8 +1,8 @@
 package com.bookfair.controller;
 
 import com.bookfair.dto.request.LoginRequest;
-import com.bookfair.dto.request.UserRequest;
-import com.bookfair.dto.response.JwtResponse;
+import com.bookfair.dto.request.RegisterRequest;
+import com.bookfair.dto.response.AuthResponse;
 import com.bookfair.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,12 +19,12 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<JwtResponse> authenticateUser(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<AuthResponse> authenticateUser(@RequestBody LoginRequest loginRequest) {
         return ResponseEntity.ok(authService.login(loginRequest));
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody UserRequest signUpRequest) {
+    public ResponseEntity<?> registerUser(@RequestBody RegisterRequest signUpRequest) {
         authService.register(signUpRequest);
         return ResponseEntity.ok("User registered successfully!");
     }

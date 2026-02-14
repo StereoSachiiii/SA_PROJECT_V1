@@ -1,12 +1,12 @@
 package com.bookfair.service;
 
 import com.bookfair.dto.request.ReservationRequest;
+import com.bookfair.dto.response.ReservationResponse;
 import com.bookfair.entity.User;
 import com.bookfair.entity.Reservation;
 import com.bookfair.entity.Stall;
 import com.bookfair.repository.ReservationRepository;
 import com.bookfair.repository.StallRepository;
-import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,14 +22,13 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final StallRepository stallRepository;
     private final UserService userService;
-    private final QrService qrService;
     private final EmailService emailService;
     
     private static final int MAX_STALLS_PER_PUBLISHER = 3;
     
     @Transactional
-    public List<Reservation> createReservations(ReservationRequest request) {
-        User user = userService.getById(request.getUserId());
+    public List<ReservationResponse> createReservations(ReservationRequest request) {
+        User user = userService.getByIdForServices(request.getUserId());
         
         // Check max stalls limit
         long currentCount = reservationRepository.countByUserId(user.getId());
@@ -55,25 +54,43 @@ public class ReservationService {
             Reservation reservation = new Reservation();
             reservation.setUser(user);
             reservation.setStall(stall);
+
+            String qrToken = UUID.randomUUID().toString();
+            reservation.setQrCode(qrToken);
             // Save first to get ID
             reservation = reservationRepository.save(reservation);
             
-            // Update QR Code with ID
-            reservation.setQrCode("RES-" + reservation.getId());
-            reservations.add(reservationRepository.save(reservation));
+            reservations.add(reservation);
         }
+
+        List<ReservationResponse> reservationResponses = reservations.stream().map(this::mapToReservationResponse).toList();
         
         // Send confirmation email
         emailService.sendConfirmation(user.getEmail(), reservations);
 
-        return reservations;
+
+
+        return reservationResponses;
     }
     
-    public List<Reservation> getByUser(Long userId) {
-        return reservationRepository.findByUserId(userId);
+    public List<ReservationResponse> getByUser(Long userId) {
+        return reservationRepository.findByUserId(userId).stream().map(this::mapToReservationResponse).toList();
     }
     
-    public List<Reservation> getAll() {
-        return reservationRepository.findAll();
+    public List<ReservationResponse> getAll() {
+        return reservationRepository.findAll().stream().map(this::mapToReservationResponse).toList();
+    }
+
+    private ReservationResponse mapToReservationResponse(Reservation reservation) {
+
+        return new ReservationResponse(
+            reservation.getId(), 
+            reservation.getQrCode(), 
+            reservation.getCreatedAt(), 
+            reservation.getUser().getId(), 
+            reservation.getUser().getBusinessName(), 
+            reservation.getStall().getId(), 
+            reservation.getStall().getName(), 
+            reservation.getStall().getSize().toString());
     }
 }

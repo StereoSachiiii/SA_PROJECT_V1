@@ -1,6 +1,6 @@
 package com.bookfair.controller;
 
-import com.bookfair.entity.Stall;
+import com.bookfair.dto.response.StallResponse;
 import com.bookfair.service.StallService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +26,7 @@ public class StallController {
      * Get all stalls with optional filtering
      */
     @GetMapping
-    public ResponseEntity<List<Stall>> getAll(
+    public ResponseEntity<List<StallResponse>> getAll(
             @RequestParam(required = false) String size,
             @RequestParam(required = false) Boolean available) {
         return ResponseEntity.ok(stallService.getAll(size, available));
@@ -37,7 +37,7 @@ public class StallController {
      * Get only available stalls
      */
     @GetMapping("/available")
-    public ResponseEntity<List<Stall>> getAvailable() {
+    public ResponseEntity<List<StallResponse>> getAvailable() {
         return ResponseEntity.ok(stallService.getAvailable());
     }
     
@@ -46,7 +46,7 @@ public class StallController {
      * Get stall by ID
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Stall> getById(@PathVariable Long id) {
+    public ResponseEntity<StallResponse> getById(@PathVariable Long id) {
         return ResponseEntity.ok(stallService.getById(id));
     }
 }

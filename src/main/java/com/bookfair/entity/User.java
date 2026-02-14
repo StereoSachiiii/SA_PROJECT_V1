@@ -7,6 +7,9 @@ import lombok.AllArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 @Entity
 @Table(name = "users")
 @Data
@@ -37,9 +40,11 @@ public class User {
     
     private String address;
 
+    @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    @UpdateTimestamp
     private LocalDateTime updatedAt = LocalDateTime.now();
     
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)

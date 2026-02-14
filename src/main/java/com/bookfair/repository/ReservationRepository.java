@@ -4,6 +4,7 @@ import com.bookfair.entity.Reservation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
@@ -13,7 +14,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     @org.springframework.data.jpa.repository.Query("SELECT r FROM Reservation r JOIN FETCH r.stall JOIN FETCH r.user")
     List<Reservation> findAll();
     
-    java.util.Optional<Reservation> findByQrCode(String qrCode);
+    Optional<Reservation> findByQrCode(String qrCode);
     
     long countByUserId(Long userId);
+
 }

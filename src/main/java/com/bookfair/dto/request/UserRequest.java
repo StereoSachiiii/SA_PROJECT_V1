@@ -1,9 +1,15 @@
 package com.bookfair.dto.request;
 
 import com.bookfair.entity.User.Role;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
+// For Admin use (keeping role)
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserRequest {
     private String username;
     private String email;
@@ -13,3 +19,4 @@ public class UserRequest {
     private String contactNumber;
     private String address;
 }
+ 

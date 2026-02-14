@@ -1,5 +1,6 @@
 package com.bookfair.service;
 
+import com.bookfair.dto.response.StallResponse;
 import com.bookfair.entity.Stall;
 import com.bookfair.repository.StallRepository;
 import jakarta.annotation.PostConstruct;
@@ -37,23 +38,33 @@ public class StallService {
         }
     }
     
-    public List<Stall> getAll(String sizeStr, Boolean available) {
+    public List<StallResponse> getAll(String sizeStr, Boolean available) {
+        List<Stall> stalls = stallRepository.findAll();
         if (sizeStr != null && available != null) {
-            return stallRepository.findBySizeAndReserved(Stall.StallSize.valueOf(sizeStr.toUpperCase()), !available); // available=true means reserved=false
+            stalls = stallRepository.findBySizeAndReserved(Stall.StallSize.valueOf(sizeStr.toUpperCase()), !available); // available=true means reserved=false
         } else if (sizeStr != null) {
-            return stallRepository.findBySize(Stall.StallSize.valueOf(sizeStr.toUpperCase()));
+            stalls = stallRepository.findBySize(Stall.StallSize.valueOf(sizeStr.toUpperCase()));
         } else if (available != null) {
-            return stallRepository.findByReserved(!available);
+            stalls = stallRepository.findByReserved(!available);
         }
-        return stallRepository.findAll();
+        return stalls.stream().map(this::mapToStallResponse).toList();
     }
     
-    public List<Stall> getAvailable() {
-        return stallRepository.findByReservedFalse();
+    public List<StallResponse> getAvailable() {
+        return stallRepository.findByReservedFalse().stream().map(this::mapToStallResponse).toList();
     }
     
-    public Stall getById(Long id) {
-        return stallRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Stall not found"));
+    public StallResponse getById(Long id) {
+        return mapToStallResponse(stallRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Stall not found")));
+    }
+
+    private StallResponse mapToStallResponse(Stall stall) {
+       return new StallResponse(stall.getId(), 
+       stall.getName(), 
+       stall.getSize().toString(), 
+       stall.getPositionX(), 
+       stall.getPositionY(), 
+       stall.getReserved());
     }
 }
