@@ -44,7 +44,7 @@ public class ReservationService {
      */
     @Transactional
     public List<Reservation> createReservations(ReservationRequest request) {
-        User user = userService.getById(request.getUserId());
+        User user = userService.getByIdForServices(request.getUserId());
         
         // Check max stalls limit (only count CONFIRMED reservations)
         long currentCount = reservationRepository.countByUserIdAndStatusConfirmed(user.getId());

@@ -17,7 +17,6 @@ public class StallResponse {
     private Long id;
     private String name;
     private String size;
-<<<<<<< HEAD
     private Integer priceCents;
     private Integer width;
     private Integer height;
@@ -27,9 +26,4 @@ public class StallResponse {
     private Integer rowSpan;
     private Boolean reserved;      // computed from reservations table, not stored
     private String occupiedBy;     // publisher business name, null if available
-=======
-    private Integer positionX;
-    private Integer positionY;
-    private Boolean reserved; 
->>>>>>> origin/backend-feature-nihadh
 }

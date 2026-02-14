@@ -75,27 +75,49 @@ public class StallService {
      * @param sizeStr   optional size filter ("SMALL", "MEDIUM", "LARGE")
      * @param available optional availability filter (true = not reserved)
      */
-    public List<Stall> getAll(String sizeStr, Boolean available) {
+    /**
+     * Get all stalls, optionally filtered by size and/or availability.
+     */
+    public List<com.bookfair.dto.response.StallResponse> getAll(String sizeStr, Boolean available) {
+        List<Stall> stalls;
         if (sizeStr != null && available != null && available) {
-            return stallRepository.findAvailableBySize(Stall.StallSize.valueOf(sizeStr.toUpperCase()));
+            stalls = stallRepository.findAvailableBySize(Stall.StallSize.valueOf(sizeStr.toUpperCase()));
         } else if (sizeStr != null) {
-            return stallRepository.findBySize(Stall.StallSize.valueOf(sizeStr.toUpperCase()));
+            stalls = stallRepository.findBySize(Stall.StallSize.valueOf(sizeStr.toUpperCase()));
         } else if (available != null && available) {
-            return stallRepository.findAvailable();
+            stalls = stallRepository.findAvailable();
+        } else {
+            stalls = stallRepository.findAll();
         }
-        return stallRepository.findAll();
+        return stalls.stream().map(this::mapToResponse).toList();
     }
     
     /**
      * Get all available (unreserved) stalls.
-     * Availability is derived from the reservations table — no CONFIRMED reservation = available.
      */
-    public List<Stall> getAvailable() {
-        return stallRepository.findAvailable();
+    public List<com.bookfair.dto.response.StallResponse> getAvailable() {
+        return stallRepository.findAvailable().stream().map(this::mapToResponse).toList();
     }
     
-    public Stall getById(Long id) {
-        return stallRepository.findById(id)
+    public com.bookfair.dto.response.StallResponse getById(Long id) {
+        Stall stall = stallRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Stall not found"));
+        return mapToResponse(stall);
+    }
+
+    private com.bookfair.dto.response.StallResponse mapToResponse(Stall stall) {
+        com.bookfair.dto.response.StallResponse response = new com.bookfair.dto.response.StallResponse();
+        response.setId(stall.getId());
+        response.setName(stall.getName());
+        response.setSize(stall.getSize().name());
+        response.setPriceCents(stall.getPriceCents());
+        response.setWidth(stall.getWidth());
+        response.setHeight(stall.getHeight());
+        response.setPositionX(stall.getPositionX());
+        response.setPositionY(stall.getPositionY());
+        response.setColSpan(stall.getColSpan());
+        response.setRowSpan(stall.getRowSpan());
+        // reserved/occupiedBy are calculated/fetched differently usually, staying null for now unless fetched
+        return response;
     }
 }

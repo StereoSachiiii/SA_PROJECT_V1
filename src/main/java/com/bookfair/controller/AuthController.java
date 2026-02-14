@@ -2,7 +2,7 @@ package com.bookfair.controller;
 
 import com.bookfair.dto.request.LoginRequest;
 import com.bookfair.dto.request.UserRequest;
-import com.bookfair.dto.response.JwtResponse;
+import com.bookfair.dto.response.AuthResponse;
 import com.bookfair.service.AuthService;
 import com.bookfair.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +25,7 @@ public class AuthController {
     private final UserService userService;
 
     @PostMapping("/login")
-    public ResponseEntity<JwtResponse> authenticateUser(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<com.bookfair.dto.response.AuthResponse> authenticateUser(@RequestBody LoginRequest loginRequest) {
         return ResponseEntity.ok(authService.login(loginRequest));
     }
 
