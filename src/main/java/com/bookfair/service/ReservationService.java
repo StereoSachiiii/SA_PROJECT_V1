@@ -14,6 +14,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Service layer for reservation operations.
+ *
+ * Handles creating reservations (with max-3-per-business enforcement),
+ * checking stall availability via the reservations table, generating QR codes,
+ * and triggering confirmation emails.
+ */
 @Service
 @RequiredArgsConstructor
 public class ReservationService {
@@ -26,12 +33,21 @@ public class ReservationService {
     
     private static final int MAX_STALLS_PER_PUBLISHER = 3;
     
+    /**
+     * Creates one or more reservations for a user.
+     *
+     * Enforces:
+     * - Max 3 stalls per user (only counts CONFIRMED reservations)
+     * - Stall must not already have a CONFIRMED reservation
+     *
+     * After creation, sends a confirmation email and updates emailSent flag.
+     */
     @Transactional
     public List<Reservation> createReservations(ReservationRequest request) {
         User user = userService.getById(request.getUserId());
         
-        // Check max stalls limit
-        long currentCount = reservationRepository.countByUserId(user.getId());
+        // Check max stalls limit (only count CONFIRMED reservations)
+        long currentCount = reservationRepository.countByUserIdAndStatusConfirmed(user.getId());
         if (currentCount + request.getStallIds().size() > MAX_STALLS_PER_PUBLISHER) {
             throw new RuntimeException("Cannot reserve more than " + MAX_STALLS_PER_PUBLISHER + " stalls");
         }
@@ -42,28 +58,39 @@ public class ReservationService {
             Stall stall = stallRepository.findById(stallId)
                     .orElseThrow(() -> new RuntimeException("Stall not found: " + stallId));
             
-            if (stall.getReserved()) {
+            // Check if stall is already reserved (via reservations table, not a boolean)
+            if (reservationRepository.isStallReserved(stallId)) {
                 throw new RuntimeException("Stall already reserved: " + stall.getName());
             }
-            
-            // Mark stall as reserved
-            stall.setReserved(true);
-            stallRepository.save(stall);
             
             // Create reservation
             Reservation reservation = new Reservation();
             reservation.setUser(user);
             reservation.setStall(stall);
+            reservation.setStatus(Reservation.ReservationStatus.CONFIRMED);
+            reservation.setEmailSent(false);
+            // Temporary QR — will be updated with proper ID after save
+            reservation.setQrCode("TEMP-" + UUID.randomUUID().toString());
+            
             // Save first to get ID
             reservation = reservationRepository.save(reservation);
             
-            // Update QR Code with ID
+            // Update QR Code with reservation ID for a cleaner format
             reservation.setQrCode("RES-" + reservation.getId());
             reservations.add(reservationRepository.save(reservation));
         }
         
-        // Send confirmation email
-        emailService.sendConfirmation(user.getEmail(), reservations);
+        // Send confirmation email and update tracking flag
+        try {
+            emailService.sendConfirmation(user.getEmail(), reservations);
+            for (Reservation r : reservations) {
+                r.setEmailSent(true);
+                reservationRepository.save(r);
+            }
+        } catch (Exception e) {
+            // Log but don't fail the reservation if email fails
+            System.err.println("Failed to send confirmation email: " + e.getMessage());
+        }
         
         return reservations;
     }
