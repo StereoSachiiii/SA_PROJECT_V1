@@ -7,8 +7,18 @@ import lombok.AllArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Represents a registered user — either a VENDOR (book publisher) or ADMIN (employee/organizer).
+ *
+ * Vendors register via the online portal and can reserve up to 3 stalls.
+ * Admins access the employee-only portal to view reservations and stall availability.
+ */
 @Entity
-@Table(name = "users")
+@Table(name = "users", indexes = {
+    @Index(name = "idx_users_username", columnList = "username"),
+    @Index(name = "idx_users_email", columnList = "email"),
+    @Index(name = "idx_users_business", columnList = "businessName")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -31,20 +41,34 @@ public class User {
     @Column(nullable = false)
     private Role role;
     
-    private String businessName; // Nullable for ADMIN
+    /** Business/publisher name. Nullable for ADMIN users. Used for the 3-stall-per-business limit. */
+    private String businessName;
     
     private String contactNumber;
     
     private String address;
 
     @Column(updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
 
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    private LocalDateTime updatedAt;
     
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @com.fasterxml.jackson.annotation.JsonIgnore
     private List<Reservation> reservations;
+    
+    /** Auto-set createdAt and updatedAt on first persist. */
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+    
+    /** Auto-update updatedAt on every update. */
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
     
     public enum Role {
         ADMIN, VENDOR
