@@ -39,6 +39,10 @@ public class ReservationService {
         List<Reservation> reservations = new ArrayList<>();
         
         for (Long stallId : request.getStallIds()) {
+            if (stallId == null) {
+                throw new RuntimeException("Stall ID cannot be null");
+            }
+            
             Stall stall = stallRepository.findById(stallId)
                     .orElseThrow(() -> new RuntimeException("Stall not found: " + stallId));
             

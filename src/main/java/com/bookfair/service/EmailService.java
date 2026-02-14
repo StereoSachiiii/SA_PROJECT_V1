@@ -23,11 +23,18 @@ public class EmailService {
     private final QrService qrService;
     
     public void sendConfirmation(String to, List<Reservation> reservations) {
+       if (to == null || to.trim().isEmpty()) {
+           throw new IllegalArgumentException("Email recipient cannot be null or empty");
+       }
+       
        try {
            Context context = new Context();
            context.setVariable("reservations", reservations);
 
            String html = templateEngine.process("res_confirmation_email_template.html", context);
+           if (html == null) {
+               throw new IllegalStateException("Email template processing returned null");
+           }
 
            String qrData = reservations.stream()
                    .map(res -> res.getQrCode())
