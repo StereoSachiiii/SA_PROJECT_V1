@@ -58,8 +58,6 @@ POST /api/auth/login
 ### Get All Stalls (Public)
 ```http
 GET /api/stalls
-GET /api/stalls?size=SMALL
-GET /api/stalls?available=true
 ```
 **Response:** `200 OK`
 ```json
@@ -68,9 +66,15 @@ GET /api/stalls?available=true
     "id": 1,
     "name": "A1",
     "size": "SMALL",
+    "priceCents": 500000,
+    "width": 1,
+    "height": 1,
+    "positionX": 0,
+    "positionY": 0,
+    "colSpan": 1,
+    "rowSpan": 1,
     "reserved": false,
-    "positionX": 1,
-    "positionY": 0
+    "occupiedBy": null
   }
 ]
 ```
@@ -78,11 +82,6 @@ GET /api/stalls?available=true
 ### Get Available Stalls (Public)
 ```http
 GET /api/stalls/available
-```
-
-### Get Stall by ID (Public)
-```http
-GET /api/stalls/{id}
 ```
 
 ---
@@ -96,16 +95,16 @@ POST /api/reservations
 ```json
 {
   "userId": 1,
-  "stallIds": [1, 2, 3]
+  "stallIds": [1, 2]
 }
 ```
-**Response:** `200 OK` — list of created reservations
+**Response:** `200 OK` — list of `ReservationResponse` objects
 
-**Rules:**
-- Max 3 stalls per user
-- Cannot reserve already-reserved stalls
-- Email confirmation sent on success (TODO)
-- QR code generated per reservation (TODO)
+**Features:**
+- Validates max 3 stalls per user.
+- Prevents double-booking.
+- Sends confirmation email automatically.
+- Generates QR code per reservation.
 
 ### Get All Reservations (Protected)
 ```http
@@ -115,6 +114,21 @@ GET /api/reservations
 ### Get Reservations by User (Protected)
 ```http
 GET /api/reservations/user/{userId}
+```
+**Response Example:**
+```json
+[
+  {
+    "id": 1,
+    "qrCode": "QR_RES_1_...",
+    "createdAt": "2026-02-14T19:00:00",
+    "publisherId": 1,
+    "businessName": "ABC Books",
+    "stallId": 1,
+    "stallName": "A1",
+    "stallSize": "SMALL"
+  }
+]
 ```
 
 ---
@@ -156,11 +170,6 @@ GET /api/employee/dashboard
 }
 ```
 
-### All Reservations (Protected)
-```http
-GET /api/employee/reservations
-```
-
 ---
 
 ## User Endpoints
@@ -197,5 +206,4 @@ GET /api/users/{id}
 ---
 
 **Roles:** `ADMIN`, `VENDOR`  
-**Database:** H2 in-memory (`jdbc:h2:mem:bookfair`)  
-**H2 Console:** `http://localhost:8080/h2-console` (user: `sa`, no password)
+**Database:** PostgreSQL (configured in `application.properties`)
