@@ -12,10 +12,14 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 
+/**
+ * QR Code generation service using ZXing.
+ * @author Nihadiyan
+ */
 @Service
 @Slf4j
 public class QrService {
-    
+
     public byte[] generateQrCode(String content) {
         try {
             QRCodeWriter writer = new QRCodeWriter();
