@@ -2,6 +2,7 @@ package com.bookfair.service;
 
 import com.bookfair.entity.Reservation;
 import com.bookfair.entity.Stall;
+import com.bookfair.exception.ResourceNotFoundException;
 import com.bookfair.repository.ReservationRepository;
 import com.bookfair.repository.StallRepository;
 import jakarta.annotation.PostConstruct;
@@ -110,7 +111,7 @@ public class StallService {
     
     public com.bookfair.dto.response.StallResponse getById(Long id) {
         Stall stall = stallRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Stall not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Stall not found with ID: " + id));
         Map<Long, Reservation> reservedMap = buildReservedMap();
         return mapToResponse(stall, reservedMap);
     }

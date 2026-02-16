@@ -6,6 +6,7 @@ import com.bookfair.dto.response.AuthResponse;
 import com.bookfair.service.AuthService;
 import com.bookfair.service.UserService;
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,7 +26,7 @@ public class AuthController {
     private final UserService userService;
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> authenticateUser(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<AuthResponse> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         return ResponseEntity.ok(authService.login(loginRequest));
     }
 
@@ -34,7 +35,7 @@ public class AuthController {
      * This gives the frontend the JWT token + userId immediately after registration.
      */
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> registerUser(@RequestBody UserRequest signUpRequest) {
+    public ResponseEntity<AuthResponse> registerUser(@Valid @RequestBody UserRequest signUpRequest) {
         userService.createUser(signUpRequest);
         // Auto-login: authenticate with the credentials just registered
         LoginRequest loginRequest = new LoginRequest();

@@ -5,9 +5,11 @@ import com.bookfair.dto.response.ReservationResponse;
 import com.bookfair.entity.Reservation;
 import com.bookfair.service.ReservationService;
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 /**
@@ -24,24 +26,30 @@ public class ReservationController {
     private final ReservationService reservationService;
     
     @PostMapping
-    public ResponseEntity<List<ReservationResponse>> create(@RequestBody ReservationRequest request) {
+    public ResponseEntity<List<ReservationResponse>> create(@Valid @RequestBody ReservationRequest request) {
         return ResponseEntity.ok(reservationService.createReservations(request).stream()
-                .map(this::mapToResponse)
+                .map(ReservationController::mapToResponse)
                 .toList());
     }
     
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<ReservationResponse>> getByUser(@PathVariable Long userId) {
-        return ResponseEntity.ok(reservationService.getByUser(userId).stream()
-                .map(this::mapToResponse)
+    public ResponseEntity<List<ReservationResponse>> getByUser(@PathVariable Long userId, Principal principal) {
+        return ResponseEntity.ok(reservationService.getByUser(userId, principal.getName()).stream()
+                .map(ReservationController::mapToResponse)
                 .toList());
     }
     
     @GetMapping
     public ResponseEntity<List<ReservationResponse>> getAll() {
         return ResponseEntity.ok(reservationService.getAll().stream()
-                .map(this::mapToResponse)
+                .map(ReservationController::mapToResponse)
                 .toList());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> cancel(@PathVariable Long id, Principal principal) {
+        reservationService.cancelReservation(id, principal.getName());
+        return ResponseEntity.noContent().build();
     }
 
     /**
