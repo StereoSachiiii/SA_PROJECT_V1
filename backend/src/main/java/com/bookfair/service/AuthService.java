@@ -44,7 +44,7 @@ public class AuthService {
                 .collect(Collectors.toList());
         
         User user = userRepository.findByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with UserName: " + userDetails.getUsername()));
 
         return new AuthResponse(jwt,
                 user.getId(),
