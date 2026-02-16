@@ -48,7 +48,7 @@ function HomePage() {
         <div className="p-8 max-w-4xl mx-auto">
             <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
 
-            {/* ✅ Slider Added Here */}
+            {/* Slider */}
             <Slider />
 
             {/* Reservations Section */}
@@ -68,12 +68,11 @@ function HomePage() {
             </section>
 
             {/* Genres Section */}
-            <section>
+            <section className="mb-10">
                 <h2 className="text-xl font-semibold mb-4">
                     Literary Genres You'll Display
                 </h2>
 
-                {/* Current genres */}
                 <div className="flex flex-wrap gap-2 mb-4">
                     {genres?.map((genre) => (
                         <span
@@ -85,7 +84,6 @@ function HomePage() {
                     ))}
                 </div>
 
-                {/* Add genre form */}
                 <form onSubmit={handleAddGenre} className="flex gap-2 mb-4">
                     <input
                         type="text"
@@ -102,7 +100,6 @@ function HomePage() {
                     </button>
                 </form>
 
-                {/* Quick add buttons */}
                 <div className="flex flex-wrap gap-2">
                     {commonGenres.map((genre) => (
                         <button
@@ -117,6 +114,31 @@ function HomePage() {
                         </button>
                     ))}
                 </div>
+            </section>
+
+            {/* Our Website Section */}
+            <section className="text-center mt-12 px-6">
+                <h2 className="text-3xl font-bold text-blue-800">
+                    Our Website
+                </h2>
+
+                {/* Stylish Blue Underline */}
+                <div className="w-24 h-1 bg-blue-500 mx-auto mt-2 rounded"></div>
+
+                <p className="text-gray-600 max-w-3xl mx-auto leading-relaxed mt-6">
+                    Welcome to our Book Fair Stall Reservation System, a simple and
+                    efficient platform designed to make stall booking easier for vendors
+                    and organizers. This website allows book sellers, publishers, and
+                    exhibitors to reserve stalls online without any hassle. Users can
+                    view available stalls, select their preferred locations, and confirm
+                    reservations quickly and securely. Our system helps reduce manual
+                    paperwork, saves time, and ensures a smooth management process for
+                    book fair events.
+                </p>
+
+                <button className="mt-6 bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-2 rounded shadow">
+                    Read More
+                </button>
             </section>
         </div>
     )
