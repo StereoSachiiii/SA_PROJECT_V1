@@ -54,7 +54,7 @@ public class UserService {
             throw new BusinessLogicException("User ID cannot be null");
         }
         return userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + id));
     }
 
     public UserResponse getById(Long id) {
@@ -64,13 +64,13 @@ public class UserService {
         }
         return userRepository.findById(id)
                 .map(this::mapToUserResponse)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + id));
     }
     
     public UserResponse getByUsername(String username) {
         return userRepository.findByUsername(username)
                 .map(this::mapToUserResponse)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with UserName: " + username));
     }
     
     public List<UserResponse> getAll() {
@@ -80,7 +80,7 @@ public class UserService {
 
     public User getByUsernameForServices(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with UserName: " + username));
     }
 
     private UserResponse mapToUserResponse(User user) {
