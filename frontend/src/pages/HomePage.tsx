@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { genreApi, reservationApi } from '../api'
 import type { GenreRequest } from '../types'
+import VisionMission from '../Components/VisionMission'
 
 function HomePage() {
     const queryClient = useQueryClient()
@@ -139,6 +140,8 @@ function HomePage() {
                 <button className="mt-6 bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-2 rounded shadow">
                     Read More
                 </button>
+                <VisionMission />
+
             </section>
         </div>
     )
