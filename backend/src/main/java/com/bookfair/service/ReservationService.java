@@ -2,6 +2,8 @@ package com.bookfair.service;
 
 import com.bookfair.dto.request.ReservationRequest;
 import com.bookfair.entity.User;
+import com.bookfair.exception.BusinessLogicException;
+import com.bookfair.exception.ResourceNotFoundException;
 import com.bookfair.entity.Reservation;
 import com.bookfair.entity.Stall;
 import com.bookfair.repository.ReservationRepository;
@@ -49,18 +51,18 @@ public class ReservationService {
         // Check max stalls limit (only count CONFIRMED reservations)
         long currentCount = reservationRepository.countByUserIdAndStatusConfirmed(user.getId());
         if (currentCount + request.getStallIds().size() > MAX_STALLS_PER_PUBLISHER) {
-            throw new RuntimeException("Cannot reserve more than " + MAX_STALLS_PER_PUBLISHER + " stalls");
+            throw new BusinessLogicException("Cannot reserve more than " + MAX_STALLS_PER_PUBLISHER + " stalls");
         }
         
         List<Reservation> reservations = new ArrayList<>();
         
         for (Long stallId : request.getStallIds()) {
             Stall stall = stallRepository.findById(stallId)
-                    .orElseThrow(() -> new RuntimeException("Stall not found: " + stallId));
+                    .orElseThrow(() -> new ResourceNotFoundException("Stall not found with ID: " + stallId));
             
             // Check if stall is already reserved (via reservations table, not a boolean)
             if (reservationRepository.isStallReserved(stallId)) {
-                throw new RuntimeException("Stall already reserved: " + stall.getName());
+                throw new BusinessLogicException("Stall already reserved: " + stall.getName());
             }
             
             // Create reservation
@@ -89,7 +91,7 @@ public class ReservationService {
             }
         } catch (Exception e) {
             // Log but don't fail the reservation if email fails
-            System.err.println("Failed to send confirmation email: " + e.getMessage());
+            System.err.println("ALERT: Reservation successful but email failed: " + e.getMessage());
         }
         
         return reservations;
