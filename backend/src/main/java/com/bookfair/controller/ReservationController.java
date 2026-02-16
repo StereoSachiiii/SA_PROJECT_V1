@@ -26,21 +26,21 @@ public class ReservationController {
     @PostMapping
     public ResponseEntity<List<ReservationResponse>> create(@RequestBody ReservationRequest request) {
         return ResponseEntity.ok(reservationService.createReservations(request).stream()
-                .map(this::mapToResponse)
+                .map(ReservationController::mapToResponse)
                 .toList());
     }
     
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<ReservationResponse>> getByUser(@PathVariable Long userId) {
         return ResponseEntity.ok(reservationService.getByUser(userId).stream()
-                .map(this::mapToResponse)
+                .map(ReservationController::mapToResponse)
                 .toList());
     }
     
     @GetMapping
     public ResponseEntity<List<ReservationResponse>> getAll() {
         return ResponseEntity.ok(reservationService.getAll().stream()
-                .map(this::mapToResponse)
+                .map(ReservationController::mapToResponse)
                 .toList());
     }
 
