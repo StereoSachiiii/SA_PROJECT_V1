@@ -3,6 +3,8 @@ package com.bookfair.service;
 import com.bookfair.dto.request.LoginRequest;
 import com.bookfair.dto.response.AuthResponse;
 import com.bookfair.entity.User;
+import com.bookfair.exception.BusinessLogicException;
+import com.bookfair.exception.ResourceNotFoundException;
 import com.bookfair.repository.UserRepository;
 import com.bookfair.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +31,7 @@ public class AuthService {
     private final JwtUtils jwtUtils;
 
     public AuthResponse login(LoginRequest loginRequest) {
+        try {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
@@ -41,7 +44,7 @@ public class AuthService {
                 .collect(Collectors.toList());
         
         User user = userRepository.findByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("Error: User not found."));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         return new AuthResponse(jwt,
                 user.getId(),
@@ -49,6 +52,9 @@ public class AuthService {
                 user.getEmail(),
                 user.getBusinessName(),
                 roles); 
+        } catch (Exception e) {
+            throw new BusinessLogicException("Invalid username or password");
+        }
     }
 
 }
