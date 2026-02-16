@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { genreApi, reservationApi } from '../api'
 import type { GenreRequest } from '../types'
+import './HomePage.css'
+
 
 function HomePage() {
     const queryClient = useQueryClient()
