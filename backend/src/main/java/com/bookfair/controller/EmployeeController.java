@@ -84,9 +84,6 @@ public class EmployeeController {
                         .businessName(reservation.getUser().getBusinessName())
                         .status(reservation.getStatus().name())
                         .build()))
-                .orElse(ResponseEntity.badRequest().body(QrVerificationResponse.builder()
-                        .valid(false)
-                        .message("Invalid QR Code")
-                        .build()));
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with QR code: " + qrCode));
     }
 }
