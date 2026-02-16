@@ -2,6 +2,7 @@ package com.bookfair.controller;
 
 import com.bookfair.dto.response.DashboardStats;
 import com.bookfair.entity.Reservation;
+import com.bookfair.exception.ResourceNotFoundException;
 import com.bookfair.repository.ReservationRepository;
 import com.bookfair.repository.StallRepository;
 import com.bookfair.repository.UserRepository;
@@ -75,6 +76,6 @@ public class EmployeeController {
                     response.put("status", reservation.getStatus().name());
                     return ResponseEntity.ok(response);
                 })
-                .orElse(ResponseEntity.badRequest().body(Map.of("valid", false, "message", "Invalid QR Code")));
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with QR code: " + qrCode));
     }
 }
