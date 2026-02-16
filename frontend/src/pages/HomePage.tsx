@@ -2,6 +2,10 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { genreApi, reservationApi } from '../api'
 import type { GenreRequest } from '../types'
+import slide1 from '../assets/photo1.jpg'
+import slide2 from '../assets/photo2.jpg'
+import slide3 from '../assets/photo3.jpg'
+
 
 /**
  * Home Page (after reservation)

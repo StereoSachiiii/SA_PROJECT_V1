@@ -1,0 +1,8 @@
+{
+  "name": "sa-project-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix frontend run dev"
+  }
+}
