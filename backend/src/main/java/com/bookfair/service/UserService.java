@@ -45,6 +45,13 @@ public class UserService {
         
         return userRepository.save(user);
     }
+
+    /**
+     * Create a user and return a safe DTO (no password hash exposed).
+     */
+    public UserResponse createUserAndReturnResponse(UserRequest request) {
+        return mapToUserResponse(createUser(request));
+    }
     
     public User getByIdForServices(Long id) {
 

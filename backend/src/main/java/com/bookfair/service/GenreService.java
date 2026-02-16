@@ -6,9 +6,6 @@ import com.bookfair.entity.Genre;
 import com.bookfair.entity.User;
 import com.bookfair.repository.GenreRepository;
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,10 +17,22 @@ public class GenreService {
     private final GenreRepository genreRepository;
     private final UserService userService;
     
+    /**
+     * Add a genre to a user's listing.
+     *
+     * Uses userId from the request body (not SecurityContext) because:
+     * 1. Auth is currently permitAll() so SecurityContext is always "anonymousUser"
+     * 2. The frontend already sends userId in the request body
+     *
+     * TODO: Once JWT auth is enforced, switch to SecurityContext-based user lookup
+     *       and remove userId from GenreRequest.
+     */
     public GenreResponse addGenre(GenreRequest request) {
-        String username = getLoggedInUser();
-
-        User user = userService.getByUsernameForServices(username);
+        if (request.getUserId() == null) {
+            throw new RuntimeException("userId is required");
+        }
+        
+        User user = userService.getByIdForServices(request.getUserId());
         
         Genre genre = new Genre();
         genre.setName(request.getName());
@@ -34,19 +43,8 @@ public class GenreService {
     }
     
     public List<GenreResponse> getByUser(Long userId) {
-        List<Genre> genres = genreRepository.findByUserId(userId);
-        List<GenreResponse> genreResponses = genres.stream().map( genre -> {
-            return new GenreResponse(genre.getId(), genre.getName());
-        }).toList();
-
-        return genreResponses;
-    }
-
-    private String getLoggedInUser() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal instanceof UserDetails) {
-            return ((UserDetails) principal).getUsername();
-        }
-        return principal.toString();
+        return genreRepository.findByUserId(userId).stream()
+                .map(genre -> new GenreResponse(genre.getId(), genre.getName()))
+                .toList();
     }
 }

@@ -25,17 +25,21 @@ public class AuthController {
     private final UserService userService;
 
     @PostMapping("/login")
-    public ResponseEntity<com.bookfair.dto.response.AuthResponse> authenticateUser(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<AuthResponse> authenticateUser(@RequestBody LoginRequest loginRequest) {
         return ResponseEntity.ok(authService.login(loginRequest));
     }
 
     /**
-     * Register a new user.
-     * Delegates to UserService to ensure proper validation and password encoding.
+     * Register a new user, then auto-login and return the same AuthResponse as /login.
+     * This gives the frontend the JWT token + userId immediately after registration.
      */
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody UserRequest signUpRequest) {
+    public ResponseEntity<AuthResponse> registerUser(@RequestBody UserRequest signUpRequest) {
         userService.createUser(signUpRequest);
-        return ResponseEntity.ok("User registered successfully!");
+        // Auto-login: authenticate with the credentials just registered
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setUsername(signUpRequest.getUsername());
+        loginRequest.setPassword(signUpRequest.getPassword());
+        return ResponseEntity.ok(authService.login(loginRequest));
     }
 }
