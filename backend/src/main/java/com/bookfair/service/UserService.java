@@ -3,6 +3,8 @@ package com.bookfair.service;
 import com.bookfair.dto.request.UserRequest;
 import com.bookfair.dto.response.UserResponse;
 import com.bookfair.entity.User;
+import com.bookfair.exception.BusinessLogicException;
+import com.bookfair.exception.ResourceNotFoundException;
 import com.bookfair.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,11 +29,11 @@ public class UserService {
      */
     public User createUser(UserRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Error: Username is already taken!");
+            throw new BusinessLogicException("Error: Username is already taken!");
         }
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Error: Email is already in use!");
+            throw new BusinessLogicException("Error: Email is already in use!");
         }
         
         User user = new User();
@@ -49,26 +51,26 @@ public class UserService {
     public User getByIdForServices(Long id) {
 
         if (id == null) {
-            throw new IllegalArgumentException("User ID cannot be null");
+            throw new BusinessLogicException("User ID cannot be null");
         }
         return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
     public UserResponse getById(Long id) {
         
         if (id == null) {
-            throw new IllegalArgumentException("User ID cannot be null");
+            throw new BusinessLogicException("User ID cannot be null");
         }
         return userRepository.findById(id)
                 .map(this::mapToUserResponse)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
     
     public UserResponse getByUsername(String username) {
         return userRepository.findByUsername(username)
                 .map(this::mapToUserResponse)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
     
     public List<UserResponse> getAll() {
@@ -78,7 +80,7 @@ public class UserService {
 
     public User getByUsernameForServices(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
     private UserResponse mapToUserResponse(User user) {
