@@ -124,7 +124,6 @@ function HomePage() {
                     Our Website
                 </h2>
 
-                {/* Stylish Blue Underline */}
                 <div className="w-24 h-1 bg-blue-500 mx-auto mt-2 rounded"></div>
 
                 <p className="text-gray-600 max-w-3xl mx-auto leading-relaxed mt-6">
@@ -141,12 +140,16 @@ function HomePage() {
                 <button className="mt-6 bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-2 rounded shadow">
                     Read More
                 </button>
-                <VisionMission />
-                <Services />
 
+                {/* ✅ Added spacing here */}
+                <div className="mt-16">
+                    <VisionMission />
+                </div>
+
+                <Services />
             </section>
         </div>
     )
 }
 
-export default HomePage
+export default HomePage;
