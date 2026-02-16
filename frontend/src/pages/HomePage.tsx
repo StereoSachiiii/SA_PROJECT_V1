@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { genreApi, reservationApi } from '../api'
 import type { GenreRequest } from '../types'
 import VisionMission from '../Components/VisionMission'
+import Services from '../Components/Services'
 
 function HomePage() {
     const queryClient = useQueryClient()
@@ -141,6 +142,7 @@ function HomePage() {
                     Read More
                 </button>
                 <VisionMission />
+                <Services />
 
             </section>
         </div>
