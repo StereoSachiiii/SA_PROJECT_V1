@@ -1,6 +1,6 @@
 /**
  * Type definitions for the API
- * These match the backend entities
+ * These match the backend DTOs (not entities)
  */
 
 export interface User {
@@ -16,9 +16,15 @@ export interface Stall {
     id: number
     name: string
     size: 'SMALL' | 'MEDIUM' | 'LARGE'
+    priceCents?: number
+    width?: number
+    height?: number
     reserved: boolean
+    occupiedBy?: string
     positionX: number
     positionY: number
+    colSpan?: number
+    rowSpan?: number
 }
 
 export interface Reservation {
@@ -26,13 +32,24 @@ export interface Reservation {
     user: User
     stall: Stall
     qrCode: string
+    status: 'CONFIRMED' | 'CANCELLED'
+    emailSent: boolean
     createdAt: string
 }
 
 export interface Genre {
     id: number
     name: string
-    user: User
+}
+
+// Auth
+export interface AuthResponse {
+    token: string
+    id: number
+    username: string
+    email: string
+    businessName: string
+    roles: string[]
 }
 
 // Request DTOs

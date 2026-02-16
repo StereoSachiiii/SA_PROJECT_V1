@@ -13,7 +13,10 @@ import org.thymeleaf.context.Context;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
+/**
+ * Email service for sending reservation confirmations with QR codes.
+ * @author Nihadiyan
+ */
 @Service
 @RequiredArgsConstructor
 public class EmailService {
@@ -21,12 +24,12 @@ public class EmailService {
     private final TemplateEngine templateEngine;
     private final JavaMailSender mailSender;
     private final QrService qrService;
-    
+
     public void sendConfirmation(String to, List<Reservation> reservations) {
        if (to == null || to.trim().isEmpty()) {
            throw new IllegalArgumentException("Email recipient cannot be null or empty");
        }
-       
+
        try {
            Context context = new Context();
            context.setVariable("reservations", reservations);

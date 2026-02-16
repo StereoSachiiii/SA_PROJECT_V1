@@ -1,7 +1,8 @@
 package com.bookfair.controller;
 
 import com.bookfair.dto.response.DashboardStats;
-import com.bookfair.entity.Reservation;
+import com.bookfair.dto.response.QrVerificationResponse;
+import com.bookfair.dto.response.ReservationResponse;
 import com.bookfair.repository.ReservationRepository;
 import com.bookfair.repository.StallRepository;
 import com.bookfair.repository.UserRepository;
@@ -9,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -50,31 +50,42 @@ public class EmployeeController {
     }
     
     /**
-     * List all reservations with full stall and user details (eager-loaded).
+     * List all reservations using ReservationResponse DTO (never raw entities).
+     * This prevents leaking password hashes and avoids circular reference issues.
      */
     @GetMapping("/reservations")
-    public ResponseEntity<List<Reservation>> getAllReservations() {
-        return ResponseEntity.ok(reservationRepository.findAll());
+    public ResponseEntity<List<ReservationResponse>> getAllReservations() {
+        return ResponseEntity.ok(reservationRepository.findAll().stream()
+                .map(ReservationController::mapToResponse)
+                .toList());
     }
 
     /**
      * Verify a QR code scanned at the exhibition entrance.
-     * Returns reservation details if valid, or an error if the QR is unknown.
+     * Returns reservation details if valid, or an error message if the QR is unknown.
      */
     @PostMapping("/verify-qr")
-    public ResponseEntity<?> verifyQr(@RequestBody Map<String, String> request) {
+    public ResponseEntity<QrVerificationResponse> verifyQr(@RequestBody Map<String, String> request) {
         String qrCode = request.get("qrCode");
         
+        if (qrCode == null || qrCode.isBlank()) {
+            return ResponseEntity.badRequest().body(QrVerificationResponse.builder()
+                    .valid(false)
+                    .message("Missing or empty 'qrCode' field")
+                    .build());
+        }
+        
         return reservationRepository.findByQrCode(qrCode)
-                .map(reservation -> {
-                    Map<String, Object> response = new HashMap<>();
-                    response.put("valid", true);
-                    response.put("reservationId", reservation.getId());
-                    response.put("stall", reservation.getStall().getName());
-                    response.put("user", reservation.getUser().getBusinessName());
-                    response.put("status", reservation.getStatus().name());
-                    return ResponseEntity.ok(response);
-                })
-                .orElse(ResponseEntity.badRequest().body(Map.of("valid", false, "message", "Invalid QR Code")));
+                .map(reservation -> ResponseEntity.ok(QrVerificationResponse.builder()
+                        .valid(true)
+                        .reservationId(reservation.getId())
+                        .stallName(reservation.getStall().getName())
+                        .businessName(reservation.getUser().getBusinessName())
+                        .status(reservation.getStatus().name())
+                        .build()))
+                .orElse(ResponseEntity.badRequest().body(QrVerificationResponse.builder()
+                        .valid(false)
+                        .message("Invalid QR Code")
+                        .build()));
     }
 }

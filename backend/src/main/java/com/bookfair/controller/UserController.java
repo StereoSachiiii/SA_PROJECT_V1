@@ -27,8 +27,8 @@ public class UserController {
      * Create a new user (admin/vendor)
      */
     @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody UserRequest request) {
-        return ResponseEntity.ok(userService.createUser(request));
+    public ResponseEntity<UserResponse> createUser(@RequestBody UserRequest request) {
+        return ResponseEntity.ok(userService.createUserAndReturnResponse(request));
     }
     
     /**
