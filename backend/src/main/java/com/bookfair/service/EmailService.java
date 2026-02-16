@@ -6,6 +6,8 @@ import com.bookfair.exception.BusinessLogicException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.util.ByteArrayDataSource;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EmailService {
 
     private final TemplateEngine templateEngine;
@@ -58,9 +61,12 @@ public class EmailService {
            mimeMessageHelper.addInline("qrCode", new ByteArrayDataSource(qrBytes, "image/png"));
 
            mailSender.send(mimeMessage);
+           log.info("Successfully sent reservation email to: {}", to);
        } catch (BusinessLogicException e) {
+           log.error("Email delivery failed to {}. Reason: {}", to, e.getMessage());
            throw e;
        } catch (Exception e) {
+           log.error("Failed to send reservation email to: {}", to, e.getMessage());
            throw new BusinessLogicException("Failed to send email confirmation");
        }
     }
