@@ -6,13 +6,9 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
-
-import com.bookfair.entity.enums.PublisherCategory;
+import org.hibernate.annotations.UpdateTimestamp;
 
 /**
  * Represents a registered user — either a VENDOR (book publisher) or ADMIN (employee/organizer).
@@ -29,8 +25,6 @@ import com.bookfair.entity.enums.PublisherCategory;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@SQLDelete(sql = "UPDATE users SET deleted_at = NOW() WHERE id = ?")
-@Where(clause = "deleted_at IS NULL")
 public class User {
     
     @Id
@@ -57,29 +51,11 @@ public class User {
     
     private String address;
 
-    @Column(name = "business_description", columnDefinition = "text")
-    private String businessDescription;
-
-    @Column(name = "logo_url")
-    private String logoUrl;
-
-    @Column(name = "reserved_stalls_count", nullable = false)
-    private Integer reservedStallsCount = 0;
-
-    @ElementCollection(targetClass = PublisherCategory.class, fetch = FetchType.EAGER)
-    @CollectionTable(name = "user_publisher_categories", joinColumns = @JoinColumn(name = "user_id"))
-    @Enumerated(EnumType.STRING)
-    @Column(name = "category")
-    private Set<PublisherCategory> publisherCategories;
-
     @CreationTimestamp
-    @Column(nullable = false, updatable = false)
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
-
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
     
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @com.fasterxml.jackson.annotation.JsonIgnore
@@ -90,7 +66,6 @@ public class User {
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
-        if (this.reservedStallsCount == null) this.reservedStallsCount = 0;
     }
     
     /** Auto-update updatedAt on every update. */
