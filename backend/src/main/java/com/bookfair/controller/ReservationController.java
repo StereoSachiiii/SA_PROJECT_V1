@@ -38,6 +38,7 @@ public class ReservationController {
                 .map(ReservationController::mapToResponse)
                 .toList());
     }
+    }
     
     @GetMapping
     public ResponseEntity<List<ReservationResponse>> getAll() {
