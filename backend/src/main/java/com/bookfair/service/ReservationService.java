@@ -95,7 +95,8 @@ public class ReservationService {
             }
         } catch (Exception e) {
             // Log but don't fail the reservation if email fails
-            System.err.println("ALERT: Reservation successful but email failed: " + e.getMessage());
+            log.warn("NON-CRITICAL: Reservation {} successful, but confirmation email failed for {}. Error: {}", 
+             reservations.get(0).getId(), user.getEmail(), e.getMessage());
         }
         
         return reservations;

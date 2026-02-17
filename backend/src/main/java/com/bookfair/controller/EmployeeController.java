@@ -7,6 +7,8 @@ import com.bookfair.exception.ResourceNotFoundException;
 import com.bookfair.repository.ReservationRepository;
 import com.bookfair.repository.StallRepository;
 import com.bookfair.repository.UserRepository;
+
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -66,7 +68,7 @@ public class EmployeeController {
      * Returns reservation details if valid, or an error message if the QR is unknown.
      */
     @PostMapping("/verify-qr")
-    public ResponseEntity<QrVerificationResponse> verifyQr(@RequestBody Map<String, String> request) {
+    public ResponseEntity<QrVerificationResponse> verifyQr(@Valid @RequestBody Map<String, String> request) {
         String qrCode = request.get("qrCode");
         
         if (qrCode == null || qrCode.isBlank()) {

@@ -3,9 +3,13 @@ package com.bookfair.controller;
 import com.bookfair.dto.request.GenreRequest;
 import com.bookfair.dto.response.GenreResponse;
 import com.bookfair.service.GenreService;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -20,6 +24,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/genres")
 @RequiredArgsConstructor
+@Validated
 public class GenreController {
     
     private final GenreService genreService;

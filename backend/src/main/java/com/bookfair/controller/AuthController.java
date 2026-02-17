@@ -5,6 +5,8 @@ import com.bookfair.dto.request.UserRequest;
 import com.bookfair.dto.response.AuthResponse;
 import com.bookfair.service.AuthService;
 import com.bookfair.service.UserService;
+
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;

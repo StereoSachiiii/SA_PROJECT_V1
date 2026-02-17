@@ -4,9 +4,12 @@ import com.bookfair.dto.request.UserRequest;
 import com.bookfair.dto.response.UserResponse;
 import com.bookfair.entity.User;
 import com.bookfair.service.UserService;
-import lombok.RequiredArgsConstructor;
+
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -20,6 +23,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
+@Validated
 public class UserController {
     
     private final UserService userService;
@@ -38,7 +42,7 @@ public class UserController {
      * Get user by ID
      */
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> getById(@PathVariable Long id, Principal principal) {
+    public ResponseEntity<UserResponse> getById(@PathVariable @Min(1) Long id, Principal principal) {
         return ResponseEntity.ok(userService.getByIdProtected(id, principal.getName()));
     }
     
