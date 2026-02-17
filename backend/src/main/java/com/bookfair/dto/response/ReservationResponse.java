@@ -5,27 +5,46 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
+/**
+ * DTO for reservation data sent to the frontend.
+ *
+ * Uses nested UserSummary and StallSummary so the frontend can access
+ * res.user.businessName and res.stall.name directly — matching the
+ * TypeScript Reservation type.
+ */
 @Data
 @NoArgsConstructor
-@AllArgsConstructor 
+@AllArgsConstructor
 public class ReservationResponse {
     private Long id;
     private String qrCode;
+    private String status;
+    private Boolean emailSent;
     private LocalDateTime createdAt;
+    private UserSummary user;
+    private StallSummary stall;
 
-    private Long publisherId;
-    private String businessName;
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UserSummary {
+        private Long id;
+        private String username;
+        private String email;
+        private String businessName;
+        private String contactNumber;
+        private String role;
+    }
 
-    private Long stallId;
-    private String stallName;
-    private String stallSize;
-
-    // @Data
-    // @NoArgsConstructor
-    // @AllArgsConstructor
-    // public static class ReservedStallInfo {
-    //     private Long stallId;
-    //     private String stallName; 
-    //     private String stallSize;
-    // }
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class StallSummary {
+        private Long id;
+        private String name;
+        private String size;
+        private Boolean reserved;
+        private Integer positionX;
+        private Integer positionY;
+    }
 }

@@ -1,12 +1,18 @@
 package com.bookfair.service;
 
+import com.bookfair.entity.Reservation;
 import com.bookfair.entity.Stall;
+import com.bookfair.exception.ResourceNotFoundException;
+import com.bookfair.repository.ReservationRepository;
 import com.bookfair.repository.StallRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Service layer for stall operations — querying, filtering, and initialization.
@@ -19,6 +25,7 @@ import java.util.List;
 public class StallService {
     
     private final StallRepository stallRepository;
+    private final ReservationRepository reservationRepository;
     
     /**
      * Initialize sample stalls on first startup if the stalls table is empty.
@@ -75,9 +82,6 @@ public class StallService {
      * @param sizeStr   optional size filter ("SMALL", "MEDIUM", "LARGE")
      * @param available optional availability filter (true = not reserved)
      */
-    /**
-     * Get all stalls, optionally filtered by size and/or availability.
-     */
     public List<com.bookfair.dto.response.StallResponse> getAll(String sizeStr, Boolean available) {
         List<Stall> stalls;
         if (sizeStr != null && available != null && available) {
@@ -89,23 +93,43 @@ public class StallService {
         } else {
             stalls = stallRepository.findAll();
         }
-        return stalls.stream().map(this::mapToResponse).toList();
+        
+        // Build a lookup of stallId -> reservation for computing reserved/occupiedBy
+        Map<Long, Reservation> reservedMap = buildReservedMap();
+        
+        return stalls.stream().map(s -> mapToResponse(s, reservedMap)).toList();
     }
     
     /**
      * Get all available (unreserved) stalls.
      */
     public List<com.bookfair.dto.response.StallResponse> getAvailable() {
-        return stallRepository.findAvailable().stream().map(this::mapToResponse).toList();
+        Map<Long, Reservation> reservedMap = buildReservedMap();
+        return stallRepository.findAvailable().stream()
+                .map(s -> mapToResponse(s, reservedMap)).toList();
     }
     
     public com.bookfair.dto.response.StallResponse getById(Long id) {
         Stall stall = stallRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Stall not found"));
-        return mapToResponse(stall);
+                .orElseThrow(() -> new ResourceNotFoundException("Stall not found with ID: " + id));
+        Map<Long, Reservation> reservedMap = buildReservedMap();
+        return mapToResponse(stall, reservedMap);
     }
 
-    private com.bookfair.dto.response.StallResponse mapToResponse(Stall stall) {
+    /**
+     * Build a map of stallId -> confirmed Reservation for quick lookup.
+     */
+    private Map<Long, Reservation> buildReservedMap() {
+        return reservationRepository.findAll().stream()
+                .filter(r -> r.getStatus() == Reservation.ReservationStatus.CONFIRMED)
+                .collect(Collectors.toMap(
+                        r -> r.getStall().getId(),
+                        r -> r,
+                        (existing, replacement) -> existing // keep first if duplicates
+                ));
+    }
+
+    private com.bookfair.dto.response.StallResponse mapToResponse(Stall stall, Map<Long, Reservation> reservedMap) {
         com.bookfair.dto.response.StallResponse response = new com.bookfair.dto.response.StallResponse();
         response.setId(stall.getId());
         response.setName(stall.getName());
@@ -117,7 +141,11 @@ public class StallService {
         response.setPositionY(stall.getPositionY());
         response.setColSpan(stall.getColSpan());
         response.setRowSpan(stall.getRowSpan());
-        // reserved/occupiedBy are calculated/fetched differently usually, staying null for now unless fetched
+        
+        Reservation reservation = reservedMap.get(stall.getId());
+        response.setReserved(reservation != null);
+        response.setOccupiedBy(reservation != null ? reservation.getUser().getBusinessName() : null);
+        
         return response;
     }
 }
