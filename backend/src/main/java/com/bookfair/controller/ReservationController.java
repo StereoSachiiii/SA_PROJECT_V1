@@ -8,10 +8,12 @@ import com.bookfair.service.ReservationService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 /**
@@ -36,8 +38,8 @@ public class ReservationController {
     }
     
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<ReservationResponse>> getByUser(@PathVariable @Min(1) Long userId) {
-        return ResponseEntity.ok(reservationService.getByUser(userId).stream()
+    public ResponseEntity<List<ReservationResponse>> getByUser(@PathVariable @Min(1) Long userId, Principal principal) {
+        return ResponseEntity.ok(reservationService.getByUser(userId, principal.getName()).stream()
                 .map(ReservationController::mapToResponse)
                 .toList());
     }
@@ -47,6 +49,12 @@ public class ReservationController {
         return ResponseEntity.ok(reservationService.getAll().stream()
                 .map(ReservationController::mapToResponse)
                 .toList());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> cancel(@PathVariable Long id, Principal principal) {
+        reservationService.cancelReservation(id, principal.getName());
+        return ResponseEntity.noContent().build();
     }
 
     /**

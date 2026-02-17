@@ -1,14 +1,16 @@
 package com.bookfair.service;
 
 import com.bookfair.dto.request.ReservationRequest;
-import com.bookfair.entity.User;
-import com.bookfair.exception.BusinessLogicException;
-import com.bookfair.exception.ResourceNotFoundException;
 import com.bookfair.entity.Reservation;
 import com.bookfair.entity.Stall;
+import com.bookfair.entity.User;
+import com.bookfair.entity.User.Role;
+import com.bookfair.exception.BusinessLogicException;
+import com.bookfair.exception.ResourceNotFoundException;
 import com.bookfair.repository.ReservationRepository;
 import com.bookfair.repository.StallRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +27,7 @@ import java.util.UUID;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ReservationService {
     
     private final ReservationRepository reservationRepository;
@@ -97,8 +100,35 @@ public class ReservationService {
         return reservations;
     }
     
-    public List<Reservation> getByUser(Long userId) {
+    public List<Reservation> getByUser(Long userId, String requesterUsername) {
+        User requester = userService.getByUsernameForServices(requesterUsername);
+        
+        // Only allow viewing if it's the owner or an Admin/Employee
+        if (!requester.getId().equals(userId) && 
+            requester.getRole() != Role.ADMIN && 
+            requester.getRole() != Role.EMPLOYEE) {
+            throw new BusinessLogicException("Access denied: Cannot view reservations for other users");
+        }
+        
         return reservationRepository.findByUserId(userId);
+    }
+    
+    @Transactional
+    public void cancelReservation(Long reservationId, String requesterUsername) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found"));
+        
+        User requester = userService.getByUsernameForServices(requesterUsername);
+        
+        // Check ownership or Admin/Employee privileges
+        if (!reservation.getUser().getId().equals(requester.getId()) && 
+            requester.getRole() != Role.ADMIN && 
+            requester.getRole() != Role.EMPLOYEE) {
+            throw new BusinessLogicException("Access denied: You do not own this reservation");
+        }
+        
+        reservation.setStatus(Reservation.ReservationStatus.CANCELLED);
+        reservationRepository.save(reservation);
     }
     
     public List<Reservation> getAll() {

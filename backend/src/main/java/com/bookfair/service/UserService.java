@@ -3,6 +3,7 @@ package com.bookfair.service;
 import com.bookfair.dto.request.UserRequest;
 import com.bookfair.dto.response.UserResponse;
 import com.bookfair.entity.User;
+import com.bookfair.entity.User.Role;
 import com.bookfair.exception.BusinessLogicException;
 import com.bookfair.exception.ResourceNotFoundException;
 import com.bookfair.repository.UserRepository;
@@ -83,6 +84,20 @@ public class UserService {
     public List<UserResponse> getAll() {
         List<User> users = userRepository.findAll();
         return users.stream().map(this::mapToUserResponse).toList();
+    }
+
+    public UserResponse getByIdProtected(Long id, String requesterUsername) {
+        User targetUser = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + id));
+        
+        User requester = userRepository.findByUsername(requesterUsername)
+                .orElseThrow(() -> new ResourceNotFoundException("Requester not found: " + requesterUsername));
+
+        if (!targetUser.getId().equals(requester.getId()) && requester.getRole() != Role.ADMIN) {
+            throw new BusinessLogicException("Access denied: You can only view your own profile.");
+        }
+
+        return mapToUserResponse(targetUser);
     }
 
     public User getByUsernameForServices(String username) {

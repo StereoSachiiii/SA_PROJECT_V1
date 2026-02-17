@@ -4,6 +4,9 @@ import com.bookfair.dto.request.GenreRequest;
 import com.bookfair.dto.response.GenreResponse;
 import com.bookfair.entity.Genre;
 import com.bookfair.entity.User;
+import com.bookfair.entity.User.Role;
+import com.bookfair.exception.BusinessLogicException;
+import com.bookfair.exception.ResourceNotFoundException;
 import com.bookfair.repository.GenreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,22 +30,30 @@ public class GenreService {
      * TODO: Once JWT auth is enforced, switch to SecurityContext-based user lookup
      *       and remove userId from GenreRequest.
      */
-    public GenreResponse addGenre(GenreRequest request) {
-        if (request.getUserId() == null) {
-            throw new RuntimeException("userId is required");
-        }
+    public GenreResponse addGenre(GenreRequest request, String requesterUsername) {
+        User requester = userService.getByUsernameForServices(requesterUsername);
         
-        User user = userService.getByIdForServices(request.getUserId());
+        if (request.getUserId() != null && !request.getUserId().equals(requester.getId()) && requester.getRole() != Role.ADMIN) {
+            throw new BusinessLogicException("Access denied: Cannot add genres for other users.");
+        }
         
         Genre genre = new Genre();
         genre.setName(request.getName());
-        genre.setUser(user);
+        genre.setUser(requester);
         genreRepository.save(genre);
 
         return new GenreResponse(genre.getId(), genre.getName());
     }
     
-    public List<GenreResponse> getByUser(Long userId) {
+    public List<GenreResponse> getByUser(Long userId, String requesterUsername) {
+        User requester = userService.getByUsernameForServices(requesterUsername);
+
+        if (!requester.getId().equals(userId) && 
+            requester.getRole() != Role.ADMIN && 
+            requester.getRole() != Role.EMPLOYEE) {
+            throw new BusinessLogicException("Access denied: Cannot view genres for other users");
+        }
+
         return genreRepository.findByUserId(userId).stream()
                 .map(genre -> new GenreResponse(genre.getId(), genre.getName()))
                 .toList();
