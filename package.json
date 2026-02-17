@@ -1,0 +1,13 @@
+{
+  "name": "sa-project-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix frontend run dev"
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.8",
+    "react-bootstrap": "^2.10.10",
+    "react-icons": "^5.5.0"
+  }
+}

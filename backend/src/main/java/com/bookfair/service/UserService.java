@@ -3,6 +3,9 @@ package com.bookfair.service;
 import com.bookfair.dto.request.UserRequest;
 import com.bookfair.dto.response.UserResponse;
 import com.bookfair.entity.User;
+import com.bookfair.entity.User.Role;
+import com.bookfair.exception.BusinessLogicException;
+import com.bookfair.exception.ResourceNotFoundException;
 import com.bookfair.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,11 +30,11 @@ public class UserService {
      */
     public User createUser(UserRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Error: Username is already taken!");
+            throw new BusinessLogicException("Error: Username is already taken!");
         }
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Error: Email is already in use!");
+            throw new BusinessLogicException("Error: Email is already in use!");
         }
         
         User user = new User();
@@ -45,30 +48,37 @@ public class UserService {
         
         return userRepository.save(user);
     }
+
+    /**
+     * Create a user and return a safe DTO (no password hash exposed).
+     */
+    public UserResponse createUserAndReturnResponse(UserRequest request) {
+        return mapToUserResponse(createUser(request));
+    }
     
     public User getByIdForServices(Long id) {
 
         if (id == null) {
-            throw new IllegalArgumentException("User ID cannot be null");
+            throw new BusinessLogicException("User ID cannot be null");
         }
         return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + id));
     }
 
     public UserResponse getById(Long id) {
         
         if (id == null) {
-            throw new IllegalArgumentException("User ID cannot be null");
+            throw new BusinessLogicException("User ID cannot be null");
         }
         return userRepository.findById(id)
                 .map(this::mapToUserResponse)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + id));
     }
     
     public UserResponse getByUsername(String username) {
         return userRepository.findByUsername(username)
                 .map(this::mapToUserResponse)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with UserName: " + username));
     }
     
     public List<UserResponse> getAll() {
@@ -76,9 +86,23 @@ public class UserService {
         return users.stream().map(this::mapToUserResponse).toList();
     }
 
+    public UserResponse getByIdProtected(Long id, String requesterUsername) {
+        User targetUser = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + id));
+        
+        User requester = userRepository.findByUsername(requesterUsername)
+                .orElseThrow(() -> new ResourceNotFoundException("Requester not found: " + requesterUsername));
+
+        if (!targetUser.getId().equals(requester.getId()) && requester.getRole() != Role.ADMIN) {
+            throw new BusinessLogicException("Access denied: You can only view your own profile.");
+        }
+
+        return mapToUserResponse(targetUser);
+    }
+
     public User getByUsernameForServices(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with UserName: " + username));
     }
 
     private UserResponse mapToUserResponse(User user) {

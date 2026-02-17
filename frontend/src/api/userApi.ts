@@ -1,9 +1,6 @@
 import api from './client'
 import type { User, UserRequest } from '../types'
 
-/**
- * User API calls (Auth & User Management)
- */
 export const userApi = {
     register: async (data: UserRequest): Promise<User> => {
         const response = await api.post<User>('/auth/register', data)

@@ -5,6 +5,9 @@ import type { Reservation, ReservationRequest } from '../types'
  * Reservation API calls
  */
 export const reservationApi = {
+    /**
+     * Creates reservations for the selected stalls
+     */
     create: async (data: ReservationRequest): Promise<Reservation[]> => {
         if (!data.stallIds || data.stallIds.length === 0) {
             throw new Error("Please select at least one stall.");

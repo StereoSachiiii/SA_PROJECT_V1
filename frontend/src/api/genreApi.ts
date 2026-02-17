@@ -15,6 +15,7 @@ export const genreApi = {
         // Prevents calling /genres/user/NaN if localStorage is empty
         if (!userId || isNaN(userId)) return [];
         
+        
         const response = await api.get<Genre[]>(`/genres/user/${userId}`)
         return response.data
     },

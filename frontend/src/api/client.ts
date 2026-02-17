@@ -24,6 +24,7 @@ api.interceptors.request.use(
 );
 
 // Global Response Interceptor
+// Global Error Interceptor
 api.interceptors.response.use(
     (response) => response,
     (error) => {
