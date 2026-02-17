@@ -1,6 +1,9 @@
 import api from './client'
 import type { Reservation, ReservationRequest } from '../types'
 
+/**
+ * Reservation API calls
+ */
 export const reservationApi = {
     /**
      * Creates reservations for the selected stalls
@@ -22,5 +25,9 @@ export const reservationApi = {
     getAll: async (): Promise<Reservation[]> => {
         const response = await api.get<Reservation[]>('/reservations')
         return response.data
+    },
+
+    cancel: async (id: number): Promise<void> => {
+        await api.delete(`/reservations/${id}`)
     },
 }
