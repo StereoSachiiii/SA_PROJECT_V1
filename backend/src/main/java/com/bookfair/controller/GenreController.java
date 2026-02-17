@@ -43,7 +43,7 @@ public class GenreController {
      * Get all genres for a user
      */
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<GenreResponse>> getByUser(@PathVariable Long userId) {
-        return ResponseEntity.ok(genreService.getByUser(userId));
+    public ResponseEntity<List<GenreResponse>> getByUser(@PathVariable Long userId, Principal principal) {
+        return ResponseEntity.ok(genreService.getByUser(userId, principal.getName()));
     }
 }
