@@ -1,5 +1,6 @@
 import { Navbar as BootstrapNavbar, Nav, Container, Button } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
+import { FaBookOpen } from 'react-icons/fa'
 
 function Navbar() {
     return (
@@ -10,8 +11,16 @@ function Navbar() {
             variant="dark"
         >
             <Container>
-                <BootstrapNavbar.Brand as={Link} to="/">
-                    BookFair
+                {/* Logo Section */}
+                <BootstrapNavbar.Brand
+                    as={Link}
+                    to="/home"
+                    className="flex items-center gap-2 text-2xl font-extrabold tracking-wide"
+                >
+                    <FaBookOpen className="text-yellow-300 text-2xl" />
+                    <span className="text-white">
+                        Bookfair<span className="text-yellow-300">Zone</span>
+                    </span>
                 </BootstrapNavbar.Brand>
 
                 <BootstrapNavbar.Toggle aria-controls="basic-navbar-nav" />
@@ -40,4 +49,4 @@ function Navbar() {
     )
 }
 
-export default Navbar
+export default Navbar;
