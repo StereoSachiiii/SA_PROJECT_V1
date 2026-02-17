@@ -2,8 +2,12 @@ package com.bookfair.controller;
 
 import com.bookfair.dto.response.StallResponse;
 import com.bookfair.service.StallService;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +21,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/stalls")
 @RequiredArgsConstructor
+@Validated
 public class StallController {
     
     private final StallService stallService;
@@ -27,8 +32,8 @@ public class StallController {
      */
     @GetMapping
     public ResponseEntity<List<StallResponse>> getAll(
-            @RequestParam(required = false) String size,
-            @RequestParam(required = false) Boolean available) {
+            @Valid @RequestParam(required = false) String size,
+            @Valid @RequestParam(required = false) Boolean available) {
         return ResponseEntity.ok(stallService.getAll(size, available));
     }
     
@@ -46,7 +51,7 @@ public class StallController {
      * Get stall by ID
      */
     @GetMapping("/{id}")
-    public ResponseEntity<StallResponse> getById(@PathVariable Long id) {
+    public ResponseEntity<StallResponse> getById(@PathVariable @Min(1) Long id) {
         return ResponseEntity.ok(stallService.getById(id));
     }
 }

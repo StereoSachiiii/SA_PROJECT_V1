@@ -4,8 +4,12 @@ import com.bookfair.dto.request.ReservationRequest;
 import com.bookfair.dto.response.ReservationResponse;
 import com.bookfair.entity.Reservation;
 import com.bookfair.service.ReservationService;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,19 +23,20 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/reservations")
 @RequiredArgsConstructor
+@Validated
 public class ReservationController {
     
     private final ReservationService reservationService;
     
     @PostMapping
-    public ResponseEntity<List<ReservationResponse>> create(@RequestBody ReservationRequest request) {
+    public ResponseEntity<List<ReservationResponse>> create(@Valid @RequestBody ReservationRequest request) {
         return ResponseEntity.ok(reservationService.createReservations(request).stream()
                 .map(ReservationController::mapToResponse)
                 .toList());
     }
     
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<ReservationResponse>> getByUser(@PathVariable Long userId) {
+    public ResponseEntity<List<ReservationResponse>> getByUser(@PathVariable @Min(1) Long userId) {
         return ResponseEntity.ok(reservationService.getByUser(userId).stream()
                 .map(ReservationController::mapToResponse)
                 .toList());
