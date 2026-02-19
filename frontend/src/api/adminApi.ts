@@ -72,3 +72,13 @@ export const adminApi = {
         const response = await api.post<Event>('/admin/events', data);
         return response.data;
     },
+
+    deleteEvent: async (id: number): Promise<void> => {
+        await api.delete(`/admin/events/${id}`);
+    },
+
+    // EVENT STATS
+    getEventStats: async (eventId: number): Promise<any> => {
+        const response = await api.get(`/admin/events/${eventId}/stats`);
+        return response.data;
+    },
