@@ -25,8 +25,3 @@ export interface UserRequest {
     address?: string
     role?: 'ADMIN' | 'VENDOR'
 }
-
-export interface LoginRequest {
-    username: string
-    password: string
-}
