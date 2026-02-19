@@ -42,3 +42,12 @@ export const adminApi = {
         });
         return response.data;
     },
+
+        // MANUAL REFUND
+    refundReservation: async (reservationId: number, reason: string): Promise<RefundResponse> => {
+        const response = await api.post<RefundResponse>('/admin/payments/refund', {
+            reservationId,
+            reason
+        });
+        return response.data;
+    },
