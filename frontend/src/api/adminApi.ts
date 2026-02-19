@@ -97,3 +97,47 @@ export const adminApi = {
         });
         return response.data;
     },
+
+    // DASHBOARD STATS
+    getDashboardStats: async (): Promise<any> => {
+        const response = await api.get('/admin/dashboard/stats');
+        return response.data;
+    },
+
+    // RESERVATION MANAGEMENT
+    getAllReservations: async (): Promise<any[]> => {
+        const response = await api.get('/admin/reservations');
+        return response.data;
+    },
+
+    // HALL MANAGEMENT
+    getAllHalls: async (): Promise<any[]> => {
+        const response = await api.get('/admin/halls');
+        return response.data;
+    },
+
+    createHall: async (data: any): Promise<any> => {
+        const response = await api.post('/admin/halls', data);
+        return response.data;
+    },
+
+    updateHall: async (id: number, data: any): Promise<any> => {
+        const response = await api.put(`/admin/halls/${id}`, data);
+        return response.data;
+    },
+
+    archiveHall: async (id: number): Promise<void> => {
+        await api.delete(`/admin/halls/${id}`);
+    },
+
+    // STALL INVENTORY
+    getStallsByHall: async (hallId: number): Promise<any[]> => {
+        const response = await api.get(`/admin/halls/${hallId}/stalls`);
+        return response.data;
+    },
+
+    bulkGenerateStalls: async (hallId: number, params: { count: number, size: string, category: string, basePriceCents: number }): Promise<any[]> => {
+        const response = await api.post(`/admin/halls/${hallId}/stalls/bulk`, null, { params });
+        return response.data;
+    }
+};
