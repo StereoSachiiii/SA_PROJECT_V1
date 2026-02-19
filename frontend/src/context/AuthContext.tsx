@@ -1,3 +1,10 @@
+/**
+ * Custom hook to access the Authentication Context.
+ * 
+ * @returns {Context}
+ */
+
+
 import { Routes, Route } from 'react-router-dom';
 import ProtectedRoute from '@/shared/components/ProtectedRoute';
 import AdminLayout from './components/Layout/AdminLayout'; // Updated path
