@@ -1,11 +1,13 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, Context } from 'react';
+import { User } from '../types/api';
+// We might import authApi to validate token on load, but for now we trust localStorage until 401 interceptor hits.
 
 /**
  * Authentication Context Type Definition
  */
 interface AuthContextType {
     /** The currently authenticated user object */
-    user: any | null; // Replace 'any' with User type when available
+    user: User | null;
     /** The JWT authentication token */
     token: string | null;
     /**
@@ -13,11 +15,13 @@ interface AuthContextType {
      * @param token - The JWT token received from the backend
      * @param user - The user object received from the backend
      */
-    login: (token: string, user: any) => void;
+    login: (token: string, user: User) => void;
     /** Function to log out the current user */
-    logout: () => void;
+    logout: (redirectPath?: string) => void;
     /** Boolean indicating if a user is currently authenticated */
     isAuthenticated: boolean;
+    /** Role helper */
+    role: 'ADMIN' | 'VENDOR' | 'EMPLOYEE' | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,51 +29,83 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 /**
  * AuthProvider Component
  * 
- * Manages the global authentication state of the application.
- * Handles token storage in localStorage and provides login/logout functionality
- * to all child components.
- * 
- * @param children - The child components to wrap
+ * Manages the global authentication state.
  */
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [user, setUser] = useState<any | null>(null);
+    const [user, setUser] = useState<User | null>(null);
     const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        // Hydrate user from localStorage if token exists
         const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
-        }
+        const storedToken = localStorage.getItem('token');
+
+        const hydrate = async () => {
+            if (storedToken) {
+                // If we have token but user is missing or broken string "undefined"
+                if (!storedUser || storedUser === 'undefined') {
+                    try {
+                        // Import dynamically to avoid circular dependency if any
+                        const { vendorApi } = await import('../api/vendorApi');
+                        const profile = await vendorApi.getProfile();
+                        if (profile && profile.id) {
+                            setUser(profile);
+                            localStorage.setItem('user', JSON.stringify(profile));
+                        } else {
+                            throw new Error("Invalid profile response");
+                        }
+                    } catch (e) {
+                        console.error("Session restoration failed:", e);
+                        logout(); // Clear broken session
+                    }
+                } else {
+                    try {
+                        const parsed = JSON.parse(storedUser);
+                        if (parsed && parsed.id) {
+                            setUser(parsed);
+                        } else {
+                            localStorage.removeItem('user');
+                        }
+                    } catch (e) {
+                        localStorage.removeItem('user');
+                    }
+                }
+            }
+            setIsLoading(false);
+        };
+
+        hydrate();
     }, []);
 
     /**
      * Logs in the user and persists session data.
      */
-    const login = (newToken: string, newUser: any) => {
+    const login = (newToken: string, newUser: User) => {
         setToken(newToken);
         setUser(newUser);
         localStorage.setItem('token', newToken);
         localStorage.setItem('user', JSON.stringify(newUser));
-        // Force reload to apply interceptor immediately? 
-        // No, client.ts handles it dynamically if we implement it right.
     };
 
     /**
      * Logs out the user and clears session data.
-     * Redirects to the login page.
      */
-    const logout = () => {
+    const logout = (redirectPath?: string) => {
         setToken(null);
         setUser(null);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        // Optional: Redirect to login
-        window.location.href = '/login';
+        window.location.href = redirectPath || '/login';
     };
 
+    const role = user?.role || null;
+
+    if (isLoading) {
+        return <div className="min-h-screen flex items-center justify-center">Loading session...</div>;
+    }
+
     return (
-        <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!token }}>
+        <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!token, role }}>
             {children}
         </AuthContext.Provider>
     );
@@ -78,8 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 /**
  * Custom hook to access the Authentication Context.
  * 
- * @throws {Error} If used outside of an AuthProvider
- * @returns {AuthContextType} The authentication context value
+ * @returns {Context}
  */
 export function useAuth() {
     const context = useContext(AuthContext);
