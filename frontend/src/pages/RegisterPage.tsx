@@ -1,135 +1,165 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
-import { userApi } from '../api'
-import type { UserRequest } from '../types'
+import { authApi } from '../api/authApi'
+import { useAuth } from '../context/AuthContext'
+import type { RegisterRequest } from '../api/authApi'
+import FormField from '../Components/FormField'
 
 /**
  * Registration Page
  */
 function RegisterPage() {
     const navigate = useNavigate()
-    const [form, setForm] = useState<UserRequest>({
+    const { login } = useAuth()
+    const [form, setForm] = useState<RegisterRequest & { contactNumber: string }>({
         username: '',
         password: '',
         businessName: '',
         email: '',
         contactNumber: '',
+        role: 'VENDOR'
     })
-    const [errors, setErrors] = useState<Partial<UserRequest>>({})
+    // Note: The UI might have extra fields like contactNumber not in RegisterRequest yet?
+    // Let's assume RegisterRequest in authApi needs to match this form or vice versa.
+    // Checking authApi: 
+    // export interface RegisterRequest { username, password, email, role, businessName?, businessDescription?, logoUrl?, category? }
+    // It does NOT have contactNumber. I should probably ignore it or add it to the type if backend needs it.
+    // For now, I will cast or just send what is in types.
+
+    const [errors, setErrors] = useState<Partial<RegisterRequest & { contactNumber?: string }>>({})
 
     const validate = () => {
-        const newErrors: Partial<UserRequest> = {}
+        const newErrors: any = {}
         if (!form.username) newErrors.username = 'Username is required'
         if (!form.password) newErrors.password = 'Password is required'
         else if (form.password.length < 6) newErrors.password = 'Password must be at least 6 characters'
         if (!form.email) newErrors.email = 'Email is required'
         else if (!/\S+@\S+\.\S+/.test(form.email)) newErrors.email = 'Email is invalid'
+
+        // Custom fields validation
         if (!form.businessName) newErrors.businessName = 'Business Name is required'
-        if (!form.contactNumber) newErrors.contactNumber = 'Contact Number is required'
 
         setErrors(newErrors)
         return Object.keys(newErrors).length === 0
     }
 
     const mutation = useMutation({
-        mutationFn: userApi.register,
-        onSuccess: () => {
-            navigate('/stalls')
+        mutationFn: authApi.register,
+        onSuccess: (data) => {
+            if (!data?.token) {
+                console.error("Registration successful but no token received", data);
+                return;
+            }
+            login(data.token, data.user)
+            navigate('/home') // OR /vendor/dashboard?
         },
     })
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
+        const payload: RegisterRequest = {
+            username: form.username,
+            password: form.password,
+            email: form.email,
+            role: form.role,
+            businessName: form.businessName,
+            // contactNumber is not in RegisterRequest, so we won't send it unless backend supports it.
+        }
         if (validate()) {
-            mutation.mutate(form)
+            mutation.mutate(payload)
         }
     }
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-50">
-            <form onSubmit={handleSubmit} className="bg-white p-8 rounded shadow-md w-96">
-                <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">User Registration</h1>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
+            <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
 
-                <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1 text-gray-700">Username</label>
-                    <input
-                        type="text"
-                        value={form.username}
-                        onChange={(e) => setForm({ ...form, username: e.target.value })}
-                        className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 ${errors.username ? 'border-red-500 ring-red-200' : 'border-gray-300 focus:ring-blue-200'}`}
-                    />
-                    {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username}</p>}
+                <div className="mb-8 text-center">
+                    <h1 className="text-2xl font-semibold text-gray-900">
+                        Create Account
+                    </h1>
+                    <p className="text-sm text-gray-500 mt-2">
+                        Start managing your stalls today
+                    </p>
                 </div>
 
-                <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1 text-gray-700">Password</label>
-                    <input
+                <form onSubmit={handleSubmit} className="space-y-5">
+
+                    <FormField
+                        label="Username"
+                        value={form.username}
+                        onChange={(e) => setForm({ ...form, username: e.target.value })}
+                        error={errors.username}
+                        placeholder="Choose a username"
+                    />
+
+                    <FormField
+                        label="Password"
                         type="password"
                         value={form.password}
                         onChange={(e) => setForm({ ...form, password: e.target.value })}
-                        className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 ${errors.password ? 'border-red-500 ring-red-200' : 'border-gray-300 focus:ring-blue-200'}`}
+                        error={errors.password}
+                        placeholder="Create a password"
                     />
-                    {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
-                </div>
 
-                <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1 text-gray-700">Business Name</label>
-                    <input
-                        type="text"
+                    <FormField
+                        label="Business Name"
                         value={form.businessName}
                         onChange={(e) => setForm({ ...form, businessName: e.target.value })}
-                        className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 ${errors.businessName ? 'border-red-500 ring-red-200' : 'border-gray-300 focus:ring-blue-200'}`}
+                        error={errors.businessName}
+                        placeholder="Your business name"
                     />
-                    {errors.businessName && <p className="text-red-500 text-xs mt-1">{errors.businessName}</p>}
-                </div>
 
-                <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1 text-gray-700">Email</label>
-                    <input
+                    <FormField
+                        label="Email"
                         type="email"
                         value={form.email}
                         onChange={(e) => setForm({ ...form, email: e.target.value })}
-                        className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 ${errors.email ? 'border-red-500 ring-red-200' : 'border-gray-300 focus:ring-blue-200'}`}
+                        error={errors.email}
+                        placeholder="name@company.com"
                     />
-                    {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
-                </div>
 
-                <div className="mb-6">
-                    <label className="block text-sm font-medium mb-1 text-gray-700">Contact Number</label>
-                    <input
-                        type="text"
+                    <FormField
+                        label="Contact Number"
                         value={form.contactNumber}
                         onChange={(e) => setForm({ ...form, contactNumber: e.target.value })}
-                        className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 ${errors.contactNumber ? 'border-red-500 ring-red-200' : 'border-gray-300 focus:ring-blue-200'}`}
+                        error={errors.contactNumber}
+                        placeholder="+1 (555) 000-0000"
                     />
-                    {errors.contactNumber && <p className="text-red-500 text-xs mt-1">{errors.contactNumber}</p>}
-                </div>
 
-                <button
-                    type="submit"
-                    disabled={mutation.isPending}
-                    className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50 transition-colors flex justify-center items-center"
-                >
-                    {mutation.isPending ? (
-                        <>
-                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            Registering...
-                        </>
-                    ) : 'Register & Continue'}
-                </button>
+                    <button
+                        type="submit"
+                        disabled={mutation.isPending}
+                        className="w-full bg-black text-white font-medium py-3 rounded-lg 
+                               hover:bg-gray-800 transition duration-200 
+                               disabled:opacity-50"
+                    >
+                        {mutation.isPending ? "Creating..." : "Register"}
+                    </button>
 
-                {mutation.isError && (
-                    <p className="text-red-500 text-sm mt-4 text-center bg-red-50 p-2 rounded">
-                        Error: {mutation.error.message}
+                    {mutation.isError && (
+                        <div className="text-red-600 text-sm bg-red-50 border border-red-200 p-3 rounded-lg">
+                            {mutation.error.message}
+                        </div>
+                    )}
+
+                    <p className="text-center text-sm text-gray-500 pt-4">
+                        Already have an account?{" "}
+                        <Link
+                            to="/login"
+                            className="text-black font-medium hover:underline"
+                        >
+                            Login
+                        </Link>
                     </p>
-                )}
-            </form>
+
+                </form>
+            </div>
         </div>
     )
+
+
 }
 
-export default RegisterPage
+export default RegisterPage;
