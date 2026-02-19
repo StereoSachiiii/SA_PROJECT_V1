@@ -51,3 +51,12 @@ export const adminApi = {
         });
         return response.data;
     },
+
+        // UPDATE PRICE
+    updateStallPrice: async (stallId: number, baseRateCents: number, multiplier: number): Promise<EventStall> => {
+        const response = await api.patch<EventStall>(`/admin/stalls/${stallId}/price`, {
+            baseRateCents,
+            multiplier
+        });
+        return response.data;
+    },
