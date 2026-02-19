@@ -82,3 +82,18 @@ export const adminApi = {
         const response = await api.get(`/admin/events/${eventId}/stats`);
         return response.data;
     },
+
+        // LAYOUT MANAGEMENT
+    saveLayout: async (eventId: number, stalls: Partial<EventStall>[]): Promise<EventStall[]> => {
+        const response = await api.post<EventStall[]>(`/admin/events/${eventId}/stalls`, stalls);
+        return response.data;
+    },
+
+    uploadVenueMap: async (eventId: number, file: File): Promise<{ url: string }> => {
+        const formData = new FormData();
+        formData.append('file', file);
+        const response = await api.post<{ url: string }>(`/admin/events/${eventId}/map`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        return response.data;
+    },
