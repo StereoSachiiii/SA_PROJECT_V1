@@ -66,3 +66,9 @@ export const adminApi = {
         const response = await api.get<SystemHealth>('/system/health');
         return response.data;
     },
+
+    // EVENT MANAGEMENT
+    createEvent: async (data: Partial<Event>): Promise<Event> => {
+        const response = await api.post<Event>('/admin/events', data);
+        return response.data;
+    },
