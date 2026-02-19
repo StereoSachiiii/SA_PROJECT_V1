@@ -60,3 +60,9 @@ export const adminApi = {
         });
         return response.data;
     },
+
+        // SYSTEM HEALTH
+    getHealth: async (): Promise<SystemHealth> => {
+        const response = await api.get<SystemHealth>('/system/health');
+        return response.data;
+    },
