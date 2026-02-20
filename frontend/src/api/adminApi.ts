@@ -43,7 +43,7 @@ export const adminApi = {
         return response.data;
     },
 
-        // MANUAL REFUND
+    // MANUAL REFUND
     refundReservation: async (reservationId: number, reason: string): Promise<RefundResponse> => {
         const response = await api.post<RefundResponse>('/admin/payments/refund', {
             reservationId,
@@ -51,8 +51,7 @@ export const adminApi = {
         });
         return response.data;
     },
-
-        // UPDATE PRICE
+    // UPDATE PRICE
     updateStallPrice: async (stallId: number, baseRateCents: number, multiplier: number): Promise<EventStall> => {
         const response = await api.patch<EventStall>(`/admin/stalls/${stallId}/price`, {
             baseRateCents,
@@ -61,7 +60,7 @@ export const adminApi = {
         return response.data;
     },
 
-        // SYSTEM HEALTH
+    // SYSTEM HEALTH
     getHealth: async (): Promise<SystemHealth> => {
         const response = await api.get<SystemHealth>('/system/health');
         return response.data;
@@ -83,7 +82,7 @@ export const adminApi = {
         return response.data;
     },
 
-        // LAYOUT MANAGEMENT
+    // LAYOUT MANAGEMENT
     saveLayout: async (eventId: number, stalls: Partial<EventStall>[]): Promise<EventStall[]> => {
         const response = await api.post<EventStall[]>(`/admin/events/${eventId}/stalls`, stalls);
         return response.data;
@@ -97,3 +96,4 @@ export const adminApi = {
         });
         return response.data;
     },
+};
