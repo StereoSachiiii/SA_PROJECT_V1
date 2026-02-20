@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 
 // Route Modules
 import AdminRoutes from '@/apps/admin/AdminRoutes'
@@ -15,6 +15,7 @@ import EventsPage from '@/apps/public/pages/EventsPage'
 import EventDetailsPage from '@/apps/public/pages/EventDetailsPage'
 import StallMapPage from '@/apps/public/pages/StallMapPage'
 import { CheckoutPage } from '@/apps/vendor/pages/CheckoutPage' // Shared/Vendor
+import NotFoundPage from '@/apps/public/pages/NotFoundPage'
 
 // Auth Pages
 import AdminLoginPage from '@/apps/admin/pages/AdminLoginPage'
@@ -61,7 +62,7 @@ function App() {
             <Route path="/admin/*" element={<AdminRoutes />} />
 
             {/* Catch-all */}
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<NotFoundPage />} />
         </Routes>
     )
 }

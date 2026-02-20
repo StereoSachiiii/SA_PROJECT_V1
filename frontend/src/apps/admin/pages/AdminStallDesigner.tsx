@@ -32,9 +32,9 @@ export default function AdminStallDesigner() {
     // Refs
     const overlayRef = useRef<HTMLDivElement>(null);
 
-    // Load initial data (mock or real)
     useEffect(() => {
         const loadEventData = async () => {
+            console.info(`[Designer] Initiating refetch for eventId: ${eventId}`);
             try {
                 setLoading(true);
                 const event = await adminApi.getEventById(eventId);
@@ -50,6 +50,7 @@ export default function AdminStallDesigner() {
                 }
 
                 // In a real app, we'd fetch the event layout here
+                console.info(`[Designer] Fetching stall templates for Hall 1`);
                 const stallTemplates = await adminApi.getStallsByHall(1); // Placeholder hall ID
                 // ... logic to sync templates ...
             } catch (err) {

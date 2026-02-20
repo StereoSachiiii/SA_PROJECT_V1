@@ -33,6 +33,7 @@ export default function HallManagement() {
 
     useEffect(() => {
         const restoreState = async () => {
+            console.info('[HallManagement] Restoring state and loading initial events');
             setLoading(true);
             try {
                 const data = await adminApi.getAllEvents();

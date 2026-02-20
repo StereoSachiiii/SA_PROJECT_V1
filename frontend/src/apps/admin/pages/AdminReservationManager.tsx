@@ -34,6 +34,7 @@ export default function AdminReservationManager() {
     const pageSize = 10;
 
     useEffect(() => {
+        console.info('[Reservations] Triggering initial load');
         loadReservations();
     }, []);
 
@@ -45,6 +46,7 @@ export default function AdminReservationManager() {
     }, [searchTerm]);
 
     const loadReservations = async () => {
+        console.info('[Reservations] Fetching all reservations from API');
         setLoading(true);
         try {
             const data = await adminApi.getAllReservations();
@@ -126,9 +128,11 @@ export default function AdminReservationManager() {
         return reservations.filter(res => {
             const username = res.user?.username || '';
             const qrCode = res.qrCode || '';
+            const fallbackId = `RES-${res.id}`;
             const matchesSearch =
                 username.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-                qrCode.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
+                qrCode.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                fallbackId.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
             const matchesStatus = statusFilter === 'ALL' || res.status === statusFilter;
             return matchesSearch && matchesStatus;
         });

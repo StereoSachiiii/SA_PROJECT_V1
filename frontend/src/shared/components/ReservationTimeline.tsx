@@ -8,21 +8,21 @@ export const ReservationTimeline = ({ reservation }: ReservationTimelineProps) =
   const timeline = [
     {
       label: 'Created',
-      date: reservation.created_at,
+      date: (reservation as any).createdAt || (reservation as any).created_at,
       completed: true,
       icon: '✓'
     },
     {
       label: 'Payment Pending',
-      date: reservation.paid_at || null,
+      date: (reservation as any).paidAt || (reservation as any).paid_at || null,
       completed: reservation.status === 'PAID' || reservation.status === 'CHECKED_IN',
       icon: reservation.status === 'PENDING_PAYMENT' ? '⏳' : '✓'
     },
     {
       label: 'Paid',
-      date: reservation.paid_at,
+      date: (reservation as any).paidAt || (reservation as any).paid_at,
       completed: reservation.status === 'PAID' || reservation.status === 'CHECKED_IN',
-      icon: reservation.paid_at ? '✓' : '○'
+      icon: ((reservation as any).paidAt || (reservation as any).paid_at) ? '✓' : '○'
     },
     {
       label: 'Checked In',
@@ -38,9 +38,8 @@ export const ReservationTimeline = ({ reservation }: ReservationTimelineProps) =
       <div className="relative">
         {timeline.map((step, idx) => (
           <div key={idx} className="flex items-start mb-4 last:mb-0">
-            <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${
-              step.completed ? 'bg-green-500' : step.completed === false ? 'bg-gray-300' : 'bg-blue-400'
-            }`}>
+            <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${step.completed ? 'bg-green-500' : step.completed === false ? 'bg-gray-300' : 'bg-blue-400'
+              }`}>
               {step.icon}
             </div>
             <div className="ml-4 flex-1">

@@ -25,7 +25,12 @@ export default function MetricsCard({ title, value, icon: Icon, subtitle, color 
             <div>
                 <h3 className="text-gray-500 text-xs font-semibold uppercase">{title}</h3>
                 <div className="text-2xl font-bold text-gray-900 mt-0.5">{value}</div>
-                {subtitle && <p className="text-[10px] text-gray-400 font-medium mt-1 uppercase">{subtitle}</p>}
+                {subtitle && (
+                    <div className="flex items-center gap-1.5 mt-1">
+                        <div className="w-1 h-1 rounded-full bg-gray-300" />
+                        <p className="text-[10px] text-gray-400 font-black uppercase tracking-wider">{subtitle}</p>
+                    </div>
+                )}
             </div>
         </div>
     );

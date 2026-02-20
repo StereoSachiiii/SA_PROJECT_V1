@@ -39,6 +39,8 @@ export default function AuditFilters({
                         <option value="EVENT">Events</option>
                         <option value="USER">Users</option>
                         <option value="STALL">Stalls</option>
+                        <option value="STALL_TEMPLATE">Templates</option>
+                        <option value="EVENT_STALL">Event Stalls</option>
                     </select>
                 </div>
             </div>

@@ -52,17 +52,22 @@ export default function StallMapPage() {
 
   const { data: rawEventMap = initialEventMap, isLoading } = useQuery<RawEventMap>({
     queryKey: ['stalls', eventId],
-    queryFn: () =>
-      eventId
+    queryFn: () => {
+      console.info(`[MapPage] Refetching event map for eventId: ${eventId}`);
+      return eventId
         ? publicApi.getEventMap(eventId)
-        : Promise.resolve(initialEventMap),
+        : Promise.resolve(initialEventMap);
+    },
     enabled: !!eventId,
     staleTime: 1000 * 60 * 5,
   })
 
   const { data: limitData } = useQuery({
     queryKey: ['available-count', eventId],
-    queryFn: () => (eventId ? vendorApi.getAvailableCount(eventId) : Promise.resolve({ limit: 3, used: 0, remaining: 3 })),
+    queryFn: () => {
+      console.info(`[MapPage] Checking available slots for eventId: ${eventId}`);
+      return eventId ? vendorApi.getAvailableCount(eventId) : Promise.resolve({ limit: 3, used: 0, remaining: 3 });
+    },
     enabled: !!user && !!eventId,
   })
   const remainingSlots: number = limitData?.remaining ?? 3
@@ -277,8 +282,8 @@ export default function StallMapPage() {
                   <p className="text-slate-500 font-medium text-sm mt-1 uppercase tracking-wide">Hall Specification</p>
                 </div>
                 <div className={`inline-flex px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider border ${currentHall.tier === 'VIP' ? 'bg-amber-100 text-amber-700 border-amber-200' :
-                    currentHall.tier === 'PREMIUM' ? 'bg-purple-100 text-purple-700 border-purple-200' :
-                      'bg-slate-100 text-slate-600 border-slate-200'
+                  currentHall.tier === 'PREMIUM' ? 'bg-purple-100 text-purple-700 border-purple-200' :
+                    'bg-slate-100 text-slate-600 border-slate-200'
                   }`}>
                   {currentHall.tier || 'Standard'} Tier
                 </div>

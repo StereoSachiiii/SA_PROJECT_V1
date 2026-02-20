@@ -39,10 +39,12 @@ export default function Dashboard() {
     });
 
     useEffect(() => {
+        console.info('[Dashboard] Initializing data stream');
         loadInitialData();
     }, []);
 
     const loadInitialData = async () => {
+        console.info('[Dashboard] Refreshing metrics, health, and logs');
         setLoading(true);
         try {
             const [h, a, e, s] = await Promise.all([

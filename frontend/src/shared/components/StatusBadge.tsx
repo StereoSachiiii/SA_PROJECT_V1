@@ -46,7 +46,7 @@ const getStallStyles = (isAvailable: boolean) => {
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, type, className = '' }) => {
     let styles = '';
-    let label = status.replace('_', ' ');
+    let label = (status || 'UNKNOWN').replace('_', ' ');
 
     switch (type) {
         case 'RESERVATION':

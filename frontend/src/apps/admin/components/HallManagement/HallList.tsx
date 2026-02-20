@@ -60,7 +60,7 @@ export const HallList: React.FC<HallListProps> = ({
                                 <p className="font-black text-gray-900 mt-0.5">{hall.capacity?.toLocaleString() || '—'}</p>
                             </div>
                             <div className="bg-gray-50 rounded-lg p-3 group-hover:bg-blue-50 transition-colors">
-                                <p className="text-gray-400 font-bold uppercase text-[9px]">Floor</p>
+                                <p className="text-gray-400 font-bold uppercase text-[9px]">Level</p>
                                 <p className="font-black text-gray-900 mt-0.5">L{hall.floorLevel !== undefined ? hall.floorLevel : '1'}</p>
                             </div>
                         </div>
