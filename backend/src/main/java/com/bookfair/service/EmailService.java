@@ -9,6 +9,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
+import com.bookfair.security.JwtUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,6 +25,10 @@ public class EmailService {
     private final TemplateEngine templateEngine;
     private final JavaMailSender mailSender;
     private final QrService qrService;
+    private final JwtUtils jwtUtils;
+
+    @org.springframework.beans.factory.annotation.Value("${app.backend.url:http://localhost:8080}")
+    private String backendUrl;
 
     public void sendConfirmation(String to, List<Reservation> reservations) {
        if (to == null || to.trim().isEmpty()) {
@@ -33,6 +38,14 @@ public class EmailService {
        try {
            Context context = new Context();
            context.setVariable("reservations", reservations);
+           
+           // Use the first reservation ID for the download link if available
+           String downloadUrl = "";
+           if (!reservations.isEmpty() && reservations.get(0).getUser() != null) {
+               String token = jwtUtils.generateJwtTokenFromUsername(reservations.get(0).getUser().getUsername());
+               downloadUrl = backendUrl + "/api/v1/vendor/reservations/" + reservations.get(0).getId() + "/qr/download?token=" + token;
+           }
+           context.setVariable("downloadUrl", downloadUrl);
 
            String html = templateEngine.process("res_confirmation_email_template.html", context);
            if (html == null) {

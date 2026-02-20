@@ -118,6 +118,16 @@ export default function StallMapPage() {
     [allStalls, selectedHall]
   )
 
+  const displayedInfluences = useMemo(
+    () => influences.filter(inf => !inf.hallName || inf.hallName === selectedHall),
+    [influences, selectedHall]
+  )
+
+  const displayedZones = useMemo(
+    () => zones.filter(z => !z.hallName || z.hallName === selectedHall),
+    [zones, selectedHall]
+  )
+
   // ── Mutation ──────────────────────────────────────────────────────────────
   const mutation = useMutation({
     mutationFn: (vars: { userId: number, stallIds: number[] }) =>
@@ -303,8 +313,8 @@ export default function StallMapPage() {
         <div className="absolute left-0 right-0 bottom-0" style={{ top: '48px' }}>
           <MapCanvas
             stalls={displayedStalls}
-            influences={influences}
-            zones={zones}
+            influences={displayedInfluences}
+            zones={displayedZones}
             selectedIds={selectedIds}
             showHeatmap={showHeatmap}
             onStallClick={handleStallClick}

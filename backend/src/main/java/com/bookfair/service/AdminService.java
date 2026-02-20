@@ -83,6 +83,18 @@ public class AdminService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ResourceNotFoundException("Event not found"));
 
+        List<Long> payloadStallIds = stalls.stream()
+                .map(com.bookfair.dto.request.EventStallUpdateRequest::getId)
+                .filter(java.util.Objects::nonNull)
+                .collect(Collectors.toList());
+
+        List<EventStall> existingStalls = eventStallRepository.findByEvent_Id(eventId);
+        for (EventStall existing : existingStalls) {
+            if (!payloadStallIds.contains(existing.getId())) {
+                eventStallRepository.delete(existing);
+            }
+        }
+
         List<EventStall> updatedItems = stalls.stream().map(dto -> {
             if (dto.getId() != null) {
                 // Existing EventStall

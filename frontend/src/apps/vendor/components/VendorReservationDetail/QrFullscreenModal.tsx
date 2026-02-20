@@ -4,12 +4,14 @@ interface QrFullscreenModalProps {
     isOpen: boolean;
     onClose: () => void;
     qrCode: string | undefined;
+    onDownload?: () => void;
 }
 
 export const QrFullscreenModal = ({
     isOpen,
     onClose,
-    qrCode
+    qrCode,
+    onDownload
 }: QrFullscreenModalProps) => {
     if (!isOpen || !qrCode) return null;
 
@@ -35,10 +37,25 @@ export const QrFullscreenModal = ({
                         fgColor={'#000000'}
                     />
                 </div>
-                <p className="mt-6 font-mono font-black text-slate-800 tracking-widest text-xl">
-                    {qrCode.split('-').pop()}
-                </p>
-                <p className="text-slate-500 text-sm mt-2 font-bold uppercase tracking-wide opacity-60 italic">Show this code at the venue entrance</p>
+
+                <div className="mt-6 flex flex-col items-center w-full">
+                    <p className="font-mono font-black text-slate-800 tracking-widest text-xl">
+                        {qrCode.split('-').pop()}
+                    </p>
+                    <p className="text-slate-500 text-[10px] mt-1 font-bold uppercase tracking-wide opacity-60 italic">Venue Entrance Code</p>
+
+                    {onDownload && (
+                        <button
+                            onClick={onDownload}
+                            className="mt-6 w-full py-3.5 bg-slate-900 hover:bg-slate-800 text-white font-black text-[10px] uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-slate-200 active:scale-[0.98] flex items-center justify-center gap-2"
+                        >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            Download QR Code
+                        </button>
+                    )}
+                </div>
             </div>
         </div>
     );

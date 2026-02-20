@@ -181,6 +181,7 @@ export const VendorReservationDetailPage = () => {
                 isOpen={showQrFullscreen}
                 onClose={() => setShowQrFullscreen(false)}
                 qrCode={reservation.qrCode || ''}
+                onDownload={handleDownloadTicket}
             />
 
             <GenreEditModal

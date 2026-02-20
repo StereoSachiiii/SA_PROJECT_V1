@@ -54,6 +54,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return headerAuth.substring(7);
         }
 
+        // Fallback to query parameter for specific endpoints (like downloads)
+        String paramAuth = request.getParameter("token");
+        if (StringUtils.hasText(paramAuth)) {
+            return paramAuth;
+        }
+
         return null;
     }
 }

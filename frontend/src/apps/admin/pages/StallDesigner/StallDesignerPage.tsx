@@ -77,7 +77,8 @@ export default function StallDesignerPage() {
 
                 // 6. Parse Zones & Influences
                 const parsedConfig = parseZones(currentEvent.layoutConfig);
-                setInitialInfluences(parsedConfig.influences.map(inf => ({
+                const hallInfluences = parsedConfig.influences.filter(inf => !inf.hallName || inf.hallName === currentHall.name);
+                setInitialInfluences(hallInfluences.map(inf => ({
                     id: inf.id,
                     type: inf.type as any,
                     x: inf.cx, y: inf.cy, radius: inf.r,
@@ -85,7 +86,8 @@ export default function StallDesignerPage() {
                     falloff: inf.falloff as any
                 })));
 
-                setInitialZones(parsedConfig.zones.map(z => ({
+                const hallZones = parsedConfig.zones.filter(z => !z.hallName || z.hallName === currentHall.name);
+                setInitialZones(hallZones.map(z => ({
                     id: crypto.randomUUID(),
                     type: z.type,
                     geometry: { x: z.x, y: z.y, w: z.w, h: z.h },
@@ -128,20 +130,36 @@ export default function StallDesignerPage() {
             await adminApi.saveLayout(event.id, payload as any);
 
             // 2. Save Zones & Influences (LayoutConfig)
+            const oldConfig = parseZones(event.layoutConfig);
+            const otherZones = oldConfig.zones.filter(z => z.hallName && z.hallName !== hall.name);
+            const otherInfluences = oldConfig.influences.filter(inf => inf.hallName && inf.hallName !== hall.name);
+
             // Convert back to RawZonesJson format expected by parseZones
             const layoutConfigObj = {
                 width: 1000, height: 600, // Dummy pixel space representation since we draw in percentages
                 entrances: [], // Legacy array, omit
-                zones: currentZones.map(z => ({
-                    type: z.type, geometry: z.geometry, metadata: { label: z.label }
-                })),
-                influences: currentInfluences.map(inf => ({
-                    id: inf.id, type: inf.type, intensity: inf.intensity, falloff: inf.falloff,
-                    // Converting percentages back to "pixel coordinates" out of 1000x600 grid that publicApi parseZones expects
-                    x: (inf.x / 100) * 1000,
-                    y: (inf.y / 100) * 600,
-                    radius: (inf.radius / 100) * 1000
-                }))
+                zones: [
+                    ...otherZones.map(z => ({
+                        hallName: z.hallName, type: z.type, geometry: { x: z.x, y: z.y, w: z.w, h: z.h }, metadata: { label: z.label }
+                    })),
+                    ...currentZones.map(z => ({
+                        hallName: hall.name, type: z.type, geometry: z.geometry, metadata: { label: z.label }
+                    }))
+                ],
+                influences: [
+                    ...otherInfluences.map(inf => ({
+                        hallName: inf.hallName, id: inf.id, type: inf.type, intensity: inf.intensity, falloff: inf.falloff,
+                        x: (inf.cx / 100) * 1000,
+                        y: (inf.cy / 100) * 600,
+                        radius: (inf.r / 100) * 1000
+                    })),
+                    ...currentInfluences.map(inf => ({
+                        hallName: hall.name, id: inf.id, type: inf.type, intensity: inf.intensity, falloff: inf.falloff,
+                        x: (inf.x / 100) * 1000,
+                        y: (inf.y / 100) * 600,
+                        radius: (inf.radius / 100) * 1000
+                    }))
+                ]
             };
 
             await adminApi.updateEvent(event.id, {

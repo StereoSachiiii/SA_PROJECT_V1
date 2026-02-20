@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @SQLDelete(sql = "UPDATE event_stalls SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
+@org.hibernate.annotations.Where(clause = "deleted_at IS NULL")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class EventStall {
 

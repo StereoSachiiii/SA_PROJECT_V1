@@ -51,6 +51,7 @@ export interface RawZonesJson {
         label: string
     }>
     influences: Array<{
+        hallName?: string // Optional for backward compatibility
         id: string
         type: string
         x: number     // PIXEL — divide by width for percentage
@@ -60,6 +61,7 @@ export interface RawZonesJson {
         falloff: string
     }>
     zones: Array<{
+        hallName?: string // Optional for backward compatibility
         type: 'WALKWAY' | 'STAGE' | 'ENTRANCE'
         geometry: { x: number; y: number; w: number; h: number }  // PERCENTAGE
         metadata?: { label?: string }
@@ -78,6 +80,7 @@ export interface RawEventMap {
 
 /** Influence circle with coordinates normalized to 0–100 percentage space */
 export interface NormalizedInfluence {
+    hallName?: string
     id: string
     type: string
     cx: number      // percentage (0–100) of container width
@@ -89,6 +92,7 @@ export interface NormalizedInfluence {
 
 /** Layout zone with percentage coordinates */
 export interface NormalizedZone {
+    hallName?: string
     type: 'WALKWAY' | 'STAGE' | 'ENTRANCE'
     x: number
     y: number
@@ -151,6 +155,7 @@ export function parseZones(zonesStr: string | null | undefined): ParsedZones {
     const H = raw.height || 600
 
     const influences: NormalizedInfluence[] = (raw.influences ?? []).map(inf => ({
+        hallName: inf.hallName,
         id: inf.id,
         type: inf.type,
         cx: (inf.x / W) * 100,
@@ -161,6 +166,7 @@ export function parseZones(zonesStr: string | null | undefined): ParsedZones {
     }))
 
     const zones: NormalizedZone[] = (raw.zones ?? []).map(z => ({
+        hallName: z.hallName,
         type: z.type,
         x: z.geometry.x,
         y: z.geometry.y,
