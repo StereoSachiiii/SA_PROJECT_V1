@@ -105,10 +105,17 @@ public class AdminMapper {
                 .status(es.getStatus() != null ? es.getStatus().name() : "")
                 .baseRateCents(es.getBaseRateCents())
                 .finalPriceCents(es.getFinalPriceCents())
+<<<<<<< HEAD
                 .posX(es.getPosX())
                 .posY(es.getPosY())
                 .width(es.getWidth())
                 .height(es.getHeight())
+=======
+                .posX(es.getPosX() != null ? es.getPosX() : (es.getStallTemplate() != null ? es.getStallTemplate().getPosX() : 0.0))
+                .posY(es.getPosY() != null ? es.getPosY() : (es.getStallTemplate() != null ? es.getStallTemplate().getPosY() : 0.0))
+                .width(es.getWidth() != null ? es.getWidth() : (es.getStallTemplate() != null ? es.getStallTemplate().getWidth() : 8.0))
+                .height(es.getHeight() != null ? es.getHeight() : (es.getStallTemplate() != null ? es.getStallTemplate().getHeight() : 8.0))
+>>>>>>> main
                 .pricingVersion(es.getPricingVersion())
                 .build();
     }

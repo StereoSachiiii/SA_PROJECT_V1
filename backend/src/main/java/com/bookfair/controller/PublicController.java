@@ -136,7 +136,11 @@ public class PublicController {
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok()
+<<<<<<< HEAD
                 .cacheControl(org.springframework.http.CacheControl.maxAge(5, java.util.concurrent.TimeUnit.MINUTES))
+=======
+                .cacheControl(org.springframework.http.CacheControl.maxAge(5, java.util.concurrent.TimeUnit.SECONDS))
+>>>>>>> main
                 .body(com.bookfair.dto.response.EventMapResponse.builder()
                 .eventId(id)
                 .eventName(event.getName())
