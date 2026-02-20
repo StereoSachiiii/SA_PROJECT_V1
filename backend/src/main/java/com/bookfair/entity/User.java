@@ -1,5 +1,6 @@
 package com.bookfair.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,6 +26,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class User {
     
     @Id
@@ -44,12 +46,32 @@ public class User {
     @Column(nullable = false)
     private Role role;
     
-    /** Business/publisher name. Nullable for ADMIN users. Used for the 3-stall-per-business limit. */
+    /** Business/publisher name. used for the 3-stall-per-business limit. */
     private String businessName;
+    
+    @Column(columnDefinition = "TEXT")
+    private String businessDescription;
+    
+    private String logoUrl;
     
     private String contactNumber;
     
     private String address;
+
+    @ElementCollection(targetClass = PublisherCategory.class, fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_categories", joinColumns = @JoinColumn(name = "user_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "category")
+    private java.util.Set<PublisherCategory> categories;
+
+    /** 
+     * Atomic counter for active reservations (PENDING + PAID + CHECKED_IN).
+     * Enforced by service layer and checked in atomic transactions.
+     * Limit: 3 per vendor.
+     */
+    private Integer reservedStallsCount = 0;
+
+    private LocalDateTime deletedAt;
 
     @CreationTimestamp
     @Column(updatable = false)
@@ -66,6 +88,9 @@ public class User {
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
+        if (this.reservedStallsCount == null) {
+            this.reservedStallsCount = 0;
+        }
     }
     
     /** Auto-update updatedAt on every update. */
@@ -75,6 +100,7 @@ public class User {
     }
     
     public enum Role {
-        ADMIN, EMPLOYEE, VENDOR
+        ADMIN, VENDOR, EMPLOYEE
     }
 }
+

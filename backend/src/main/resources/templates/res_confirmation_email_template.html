@@ -1,21 +1,35 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <body style="font-family: sans-serif; color: #333; line-height: 1.6; background-color: #f4f4f4;">
-    <div style="max-width: 600px; margin: 30px auto; background: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+    <div
+        style="max-width: 600px; margin: 30px auto; background: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
         <h2 style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px;">
             Reservation Confirmation
         </h2>
         <p>
-            Thank you for your reservation! Your stalls for <strong>Book Fair 2026</strong> are ready. Here are the details:
+            Thank you for your reservation! Your stalls for <strong>Book Fair 2026</strong> are ready. Here are the
+            details:
         </p>
         <ul style="list-style: none; padding: 0;">
-            <li th:each="res : ${reservations}" style="margin-bottom: 10px; padding: 10px; border: 1px solid #eee; border-radius: 5px;">
+            <li th:each="res : ${reservations}"
+                style="margin-bottom: 10px; padding: 10px; border: 1px solid #eee; border-radius: 5px;">
                 <p style="font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 5px;">
-                    <span th:text="${res.stall.name}">Stall Name</span>
+                    <span th:text="${res.eventStall.stallTemplate.name}">Stall Name</span>
                     <small style="color: #999; float: right;" th:text="${'#' + res.id}">#1</small>
                 </p>
             </li>
         </ul>
+
+        <div style="text-align: center; margin-top: 30px; padding: 20px; border-top: 2px dashed #eee;">
+            <p style="font-size: 14px; font-weight: bold; color: #7f8c8d; margin-bottom: 15px;">Your Entry QR Pass</p>
+            <img src="cid:qrCode" alt="QR Pass"
+                style="width: 200px; height: 200px; border: 1px solid #ddd; padding: 10px; border-radius: 10px;" />
+            <p style="font-size: 12px; color: #95a5a6; margin-top: 10px;">
+                Show this QR at the entrance. <br />
+                <span style="font-size: 10px;">(This pass covers all reserved stalls listed above)</span>
+            </p>
+        </div>
         <div style="margin-top: 20px;">
             <p style="font-size: 11px; text-align: center; margin-top: 20px; color: #aaa;">
                 This is an automated confirmation email.
@@ -23,4 +37,5 @@
         </div>
     </div>
 </body>
+
 </html>

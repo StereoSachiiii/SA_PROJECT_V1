@@ -13,6 +13,10 @@ public class UserResponse {
     private String email;
     private String role;
     private String businessName;
+    private String businessDescription;
+    private String logoUrl;
+    private java.util.List<String> categories;
     private String contactNumber;
     private String address;
+    private Integer reservedStallsCount;
 }

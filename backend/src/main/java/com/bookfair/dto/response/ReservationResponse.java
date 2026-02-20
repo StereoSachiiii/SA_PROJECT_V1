@@ -22,7 +22,16 @@ public class ReservationResponse {
     private Boolean emailSent;
     private LocalDateTime createdAt;
     private UserSummary user;
-    private StallSummary stall;
+    private java.util.List<String> stalls; // Keeping for backward compatibility
+    private StallSummary stallDetails; // New enriched stall object
+    private Long totalPriceCents;
+    private Long ttlSeconds;
+    private LocalDateTime expiresAt;
+    private EventSummary event;
+
+    public Long getReservationId() {
+        return id;
+    }
 
     @Data
     @NoArgsConstructor
@@ -34,6 +43,7 @@ public class ReservationResponse {
         private String businessName;
         private String contactNumber;
         private String role;
+        private java.util.List<String> categories;
     }
 
     @Data
@@ -43,8 +53,23 @@ public class ReservationResponse {
         private Long id;
         private String name;
         private String size;
+        private Long finalPriceCents;
+        private Long baseRateCents;
+        private Double multiplier;
+        private String hallName;
+        private String hallTier;
+        private Integer floorLevel;
+        private String buildingName;
         private Boolean reserved;
-        private Integer positionX;
-        private Integer positionY;
+        private String geometry;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class EventSummary {
+        private Long id;
+        private String name;
+        private String venueName;
     }
 }

@@ -4,14 +4,9 @@ import com.bookfair.dto.request.UserRequest;
 import com.bookfair.dto.response.UserResponse;
 import com.bookfair.entity.User;
 import com.bookfair.service.UserService;
-
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
 import java.security.Principal;
 import java.util.List;
 
@@ -21,41 +16,36 @@ import java.util.List;
  * Handles User management operations.
  */
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/v1/vendor/profile")
 @RequiredArgsConstructor
-@Validated
 public class UserController {
     
     private final UserService userService;
     
     /**
-     * POST /api/users
-     * Create a new user (admin/vendor)
-     */
-    @PostMapping
-    public ResponseEntity<UserResponse> createUser(@Valid @RequestBody UserRequest request) {
-        return ResponseEntity.ok(userService.createUserAndReturnResponse(request));
-    }
-    
-    /**
-     * GET /api/users/{id}
-     * Get user by ID
-     */
-    @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> getById(@PathVariable @Min(1) Long id, Principal principal) {
-        return ResponseEntity.ok(userService.getByIdProtected(id, principal.getName()));
-    }
-    
-    /**
-     * GET /api/users
-     * Get all users (for admin portal)
+     * GET /api/v1/vendor/profile
+     * Returns the currently logged-in vendor's profile.
      */
     @GetMapping
-    public ResponseEntity<List<UserResponse>> getAll(Principal principal) {
-        User requester = userService.getByUsernameForServices(principal.getName());
-        if (requester.getRole() != User.Role.ADMIN) {
-            throw new com.bookfair.exception.BusinessLogicException("Access denied: Only ADMIN can view all users.");
-        }
-        return ResponseEntity.ok(userService.getAll());
+    public ResponseEntity<UserResponse> getProfile(Principal principal) {
+        return ResponseEntity.ok(userService.getByUsername(principal.getName()));
+    }
+
+    /**
+     * PATCH /api/v1/vendor/profile
+     * Updates the current vendor's profile.
+     */
+    @PatchMapping
+    public ResponseEntity<UserResponse> updateProfile(Principal principal, @RequestBody UserRequest request) {
+        return ResponseEntity.ok(userService.updateProfile(principal.getName(), request));
+    }
+
+    /**
+     * GET /api/v1/vendor/profile/{id}
+     * Get user by ID. Protected with IDOR check.
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponse> getById(@PathVariable Long id, Principal principal) {
+        return ResponseEntity.ok(userService.getByIdProtected(id, principal.getName()));
     }
 }

@@ -1,0 +1,1 @@
+// copy paste from VendorDashboardPage.tsx, the reservation row component, to make it reusable across the app and also to clean up the VendorDashboardPage.tsx file a bit

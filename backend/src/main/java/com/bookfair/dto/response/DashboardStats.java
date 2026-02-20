@@ -15,4 +15,5 @@ public class DashboardStats {
     private long availableStalls;
     private long totalUsers;
     private long totalReservations;
+    private long checkedInCount; // Number of reservations that have been checked-in
 }
