@@ -6,9 +6,9 @@ interface MapHeatmapProps {
 
 function influenceColor(type: string): string {
     switch (type) {
-        case 'ENTRANCE': return '#3b82f6';   // blue
-        case 'STAGE': return '#f59e0b';      // amber
-        case 'WALKWAY': return '#8b5cf6';    // violet
+        case 'NOISE': return '#ef4444';      // red-500
+        case 'FACILITY': return '#3b82f6';   // blue-500
+        case 'TRAFFIC': return '#22c55e';    // green-500
         default: return '#10b981';            // emerald
     }
 }
@@ -54,7 +54,7 @@ export default function MapHeatmap({ influences }: MapHeatmapProps) {
                         <circle
                             cx={inf.cx}
                             cy={inf.cy}
-                            r={inf.r * 0.5}
+                            r={inf.r}
                             fill={`url(#influence-grad-${idx})`}
                             style={{
                                 filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.1))',
@@ -63,7 +63,7 @@ export default function MapHeatmap({ influences }: MapHeatmapProps) {
                         <circle
                             cx={inf.cx}
                             cy={inf.cy}
-                            r={inf.r * 0.5}
+                            r={inf.r}
                             fill="none"
                             stroke={color}
                             strokeWidth="0.8"

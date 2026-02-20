@@ -10,7 +10,7 @@ export default function EmployeePortalPage() {
     const {
         activeTab, setActiveTab,
         stats, loadingStats,
-        searchQuery, setSearchQuery, searchResults, handleSearch, isSearching
+        searchQuery, setSearchQuery, searchResults, handleSearch
     } = useEmployeeDashboard();
 
     const {
@@ -25,17 +25,13 @@ export default function EmployeePortalPage() {
         lookupLoading,
         lookupError,
         admitLoading,
-        admitError,
         admitSuccess,
         overrideLoading,
-        overrideError,
-        overrideSuccess,
         handleReset
     } = useEmployeeScanner();
 
-    // Combined Loading/Error for UI
+    // Combined Loading/Error for UI (loading is used on line 366)
     const loading = lookupLoading || admitLoading || overrideLoading;
-    const error = lookupError?.message || admitError?.message || overrideError?.message;
 
     const handleExport = async () => {
         try {

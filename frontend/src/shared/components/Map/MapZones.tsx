@@ -13,9 +13,9 @@ export default function MapZones({ zones }: MapZonesProps) {
                     className="absolute pointer-events-none"
                     style={{
                         left: `${zone.x}%`,
-                        top: `${Math.max(0, zone.y)}%`,
+                        top: `${zone.y}%`,
                         width: `${zone.w}%`,
-                        height: `${Math.min(100, Math.max(zone.h, 0))}%`,
+                        height: `${zone.h}%`,
                         zIndex: 2,
                     }}
                 >

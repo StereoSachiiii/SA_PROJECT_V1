@@ -96,6 +96,8 @@ public class PublicController {
                     meta.put("tier", hall.getTier());
                     meta.put("floor", hall.getFloorLevel());
                     meta.put("sqFt", hall.getTotalSqFt());
+                    meta.put("category", hall.getMainCategory());
+                    meta.put("mainCategory", hall.getMainCategory()); // sending both just in case
                     hallMetadata.put(hall.getId(), meta);
                 });
         }
@@ -106,6 +108,7 @@ public class PublicController {
         response.put("stalls", stalls);
         response.put("layout", layout);
         response.put("halls", hallMetadata.values()); // Return list of hall objects
+        response.put("zones", event.getLayoutConfig());
         
         return ResponseEntity.ok(response);
     }

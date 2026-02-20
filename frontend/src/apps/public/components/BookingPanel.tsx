@@ -67,6 +67,11 @@ function ConfirmModal({
                     {s.type}
                   </span>
                 )}
+                {s.category && s.category !== 'RETAIL' && (
+                  <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100">
+                    {s.category.replace('_', ' ')}
+                  </span>
+                )}
               </div>
               <span className="text-sm font-semibold text-slate-900 tabular-nums">
                 {formatPrice(s.priceCents)} <span className="text-[10px] text-slate-400 font-normal">LKR</span>

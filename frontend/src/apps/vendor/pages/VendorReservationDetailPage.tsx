@@ -31,6 +31,7 @@ export const VendorReservationDetailPage = () => {
     const [showQrFullscreen, setShowQrFullscreen] = useState(false);
     const [showCancelConfirm, setShowCancelConfirm] = useState(false);
     const [showEditInfo, setShowEditInfo] = useState(false);
+    const [isDownloading, setIsDownloading] = useState(false);
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
     const queryClient = useQueryClient();
 
@@ -61,6 +62,19 @@ export const VendorReservationDetailPage = () => {
             setShowEditInfo(false);
         }
     });
+
+    const handleDownloadTicket = async () => {
+        if (isDownloading) return;
+        setIsDownloading(true);
+        try {
+            await vendorApi.downloadTicket(reservationId);
+        } catch (e) {
+            console.error('Download error', e);
+            alert('Failed to download ticket. Please try again.');
+        } finally {
+            setIsDownloading(false);
+        }
+    };
 
     const openEditModal = () => {
         setSelectedCategories(reservation?.user?.categories || []);
@@ -116,6 +130,7 @@ export const VendorReservationDetailPage = () => {
                         qrCode={reservation.qrCode}
                         isCancelled={isCancelled}
                         onShowFullscreen={() => setShowQrFullscreen(true)}
+                        onDownloadTicket={handleDownloadTicket}
                     />
 
                     <PaymentSummary reservation={reservation} />

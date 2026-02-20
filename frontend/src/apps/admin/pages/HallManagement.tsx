@@ -300,7 +300,6 @@ export default function HallManagement() {
                     onPublish={handlePublish}
                     onArchive={handleArchive}
                     onEdit={handleOpenEdit}
-                    onOpenCreate={handleOpenCreate}
                 />
             )}
 

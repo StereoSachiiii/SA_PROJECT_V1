@@ -128,6 +128,11 @@ export function StallTooltip({ stall, anchorRect }: StallTooltipProps) {
             {stall.size}
           </span>
         )}
+        {stall.category && stall.category !== 'RETAIL' && (
+          <span className="text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100">
+            {stall.category.replace('_', ' ')}
+          </span>
+        )}
       </div>
     </div>
   )

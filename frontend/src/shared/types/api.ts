@@ -289,7 +289,7 @@ export interface NotificationResponse {
     id: number;
     message: string;
     type: NotificationType;
-    isRead: boolean;
+    read: boolean;
     createdAt: string;
 }
 export interface DashboardStats {

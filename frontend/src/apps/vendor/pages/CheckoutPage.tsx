@@ -2,23 +2,15 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { reservationApi } from '@/shared/api/reservationApi';
 import { paymentApi } from '@/shared/api/paymentApi';
-import { vendorApi } from '@/shared/api/vendorApi';
-import { useAuth } from '@/shared/context/AuthContext';
 import { APP_CONFIG } from '@/config';
 
 // Sub-components
 import { CheckoutSummary } from '../components/Checkout/CheckoutSummary';
 import { PaymentMethodSelector } from '../components/Checkout/PaymentMethodSelector';
 import { StripePaymentFlow } from '../components/Checkout/StripePaymentFlow';
-import { GenreSelection } from '../components/Checkout/GenreSelection';
-
-const ALL_GENRES = [
-    'FICTION', 'NON_FICTION', 'ACADEMIC', 'RELIGIOUS',
-    'CHILDREN', 'TRANSLATIONS', 'STATIONERY', 'EDUCATIONAL', 'OTHER'
-];
 
 const stripePromise = loadStripe(APP_CONFIG.STRIPE_PUBLISHABLE_KEY);
 
@@ -26,28 +18,16 @@ export const CheckoutPage = () => {
     const { id } = useParams<{ id: string }>();
     const reservationId = Number(id);
     const navigate = useNavigate();
-    const queryClient = useQueryClient();
-    const { user } = useAuth();
 
     const [paymentMethod, setPaymentMethod] = useState<'SELECT' | 'ONLINE' | 'CASH'>('SELECT');
     const [clientSecret, setClientSecret] = useState<string | null>(null);
     const [intentError, setIntentError] = useState<string | null>(null);
     const [isSuccess, setIsSuccess] = useState(false);
-    const [showGenrePrompt, setShowGenrePrompt] = useState(false);
-    const [selectedGenres, setSelectedGenres] = useState<string[]>(user?.categories || []);
 
     const { data: reservation, isLoading: isResLoading } = useQuery({
         queryKey: ['reservation', reservationId],
         queryFn: () => reservationApi.getById(reservationId),
         enabled: !!reservationId,
-    });
-
-    const updateProfileMutation = useMutation({
-        mutationFn: (categories: string[]) => vendorApi.updateProfile({ categories }),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['reservations'] });
-            navigate(`/vendor/reservations/${reservationId}`);
-        }
     });
 
     useEffect(() => {
@@ -57,12 +37,6 @@ export const CheckoutPage = () => {
                 .catch((err) => setIntentError(err.response?.data?.message || "Failed to initialize secure payment."));
         }
     }, [reservationId, paymentMethod, clientSecret, intentError]);
-
-    const toggleGenre = (genre: string) => {
-        setSelectedGenres(prev =>
-            prev.includes(genre) ? prev.filter(g => g !== genre) : [...prev, genre]
-        );
-    };
 
     if (isResLoading) return (
         <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-slate-50">
@@ -81,21 +55,7 @@ export const CheckoutPage = () => {
         </div>
     );
 
-    if (showGenrePrompt) {
-        return (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-                <div className="max-w-xl w-full">
-                    <GenreSelection
-                        selected={selectedGenres}
-                        onToggle={toggleGenre}
-                        genres={ALL_GENRES}
-                        isPending={updateProfileMutation.isPending}
-                        onSave={() => updateProfileMutation.mutate(selectedGenres)}
-                    />
-                </div>
-            </div>
-        );
-    }
+
 
     if (isSuccess || (paymentMethod === 'CASH' && clientSecret === 'CASH_INIT')) { // Simplified cash success flag
         return (
@@ -115,10 +75,10 @@ export const CheckoutPage = () => {
                             : "Transaction complete. Your stalls are now officially secured."}
                     </p>
                     <button
-                        onClick={() => setShowGenrePrompt(true)}
+                        onClick={() => navigate(`/vendor/reservations/${reservationId}`)}
                         className="w-full bg-slate-900 text-white font-black py-5 rounded-2xl hover:bg-slate-800 transition-all shadow-xl active:scale-95 uppercase text-xs tracking-widest"
                     >
-                        Continue to Setup →
+                        View Reservation →
                     </button>
                 </div>
             </div>

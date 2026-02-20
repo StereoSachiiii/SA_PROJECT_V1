@@ -26,4 +26,6 @@ public class EventRequest {
     private String location;
 
     private Event.EventStatus status;
+
+    private String layoutConfig;
 }

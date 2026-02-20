@@ -42,7 +42,7 @@ export default function NotificationBell() {
     const handleMarkAsRead = async (id: number) => {
         try {
             await notificationApi.markAsRead(id);
-            setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+            setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
             setUnreadCount(prev => Math.max(0, prev - 1));
         } catch (error) {
         }
@@ -80,16 +80,16 @@ export default function NotificationBell() {
                                 {notifications.map(n => (
                                     <div
                                         key={n.id}
-                                        onClick={() => !n.isRead && handleMarkAsRead(n.id)}
-                                        className={`p-5 transition-colors cursor-pointer hover:bg-slate-50 relative group ${!n.isRead ? 'bg-blue-50/30' : ''}`}
+                                        onClick={() => !n.read && handleMarkAsRead(n.id)}
+                                        className={`p-5 transition-colors cursor-pointer hover:bg-slate-50 relative group ${!n.read ? 'bg-blue-50/30' : ''}`}
                                     >
-                                        {!n.isRead && <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500"></div>}
+                                        {!n.read && <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500"></div>}
                                         <div className="flex gap-3">
                                             <span className="text-lg">
                                                 {n.type === 'SUCCESS' ? '✅' : n.type === 'WARNING' ? '⚠️' : n.type === 'URGENT' ? '🚨' : 'ℹ️'}
                                             </span>
                                             <div className="flex-1">
-                                                <p className={`text-xs leading-relaxed ${!n.isRead ? 'text-slate-900 font-bold' : 'text-slate-500 font-medium'}`}>
+                                                <p className={`text-xs leading-relaxed ${!n.read ? 'text-slate-900 font-bold' : 'text-slate-500 font-medium'}`}>
                                                     {n.message}
                                                 </p>
                                                 <span className="text-[10px] text-slate-400 font-medium mt-2 block italic">

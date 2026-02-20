@@ -43,7 +43,6 @@ public class EventService {
     public Event updateEvent(Long id, com.bookfair.dto.request.EventRequest request) {
         Event event = getEventById(id);
         event.setName(request.getName());
-        event.setName(request.getName());
         event.setDescription(request.getDescription());
         event.setImageUrl(request.getImageUrl());
         event.setStartDate(request.getStartDate());
@@ -51,6 +50,9 @@ public class EventService {
         event.setLocation(request.getLocation());
         if (request.getStatus() != null) {
             event.setStatus(request.getStatus());
+        }
+        if (request.getLayoutConfig() != null) {
+            event.setLayoutConfig(request.getLayoutConfig());
         }
         return eventRepository.save(event);
     }

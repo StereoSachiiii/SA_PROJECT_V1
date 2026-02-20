@@ -155,12 +155,12 @@ export default function StallInventory() {
         }
     };
 
-    const handleExportCsv = () => {
-        const url = adminApi.exportStallsCsv(Number(hallId));
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `stalls-hall-${hallId}.csv`;
-        link.click();
+    const handleExportCsv = async () => {
+        try {
+            await adminApi.exportStallsCsv(Number(hallId));
+        } catch (err: any) {
+            setError('Failed to export CSV.');
+        }
     };
 
     const getCategoryColor = (cat: string) => {

@@ -3,13 +3,12 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { publicApi } from '@/shared/api/publicApi'
 import { vendorApi } from '@/shared/api/vendorApi'
-// reservationApi removed (unused)
 import { useAuth } from '@/shared/context/AuthContext'
+import { PUBLISHER_GENRES } from '@/shared/constants'
 
 import { MapCanvas } from '@/shared/components/MapCanvas'
 import { StallTooltip } from '@/shared/components/StallTooltip'
 import { BookingPanel } from '@/apps/public/components/BookingPanel'
-// StallActionButtons removed (unused)
 import {
   MapStall,
   RawEventMap,
@@ -46,6 +45,7 @@ export default function StallMapPage() {
   const [showHeatmap, setShowHeatmap] = useState(false)
   const [hoveredStall, setHoveredStall] = useState<MapStall | null>(null)
   const [tooltipAnchor, setTooltipAnchor] = useState<DOMRect | null>(null)
+  const [selectedGenre, setSelectedGenre] = useState<string | null>(null)
 
   // ── Data ──────────────────────────────────────────────────────────────────
   const initialEventMap: RawEventMap = { eventId: 0, eventName: '', stalls: [], zones: '' }
@@ -93,14 +93,25 @@ export default function StallMapPage() {
     [allStalls]
   )
 
-  // Auto-select first hall on load
+  // Auto-select best hall on load — prefer genre-matched hall
   useEffect(() => {
     if (halls.length > 0 && (!selectedHall || !halls.includes(selectedHall))) {
-      setSelectedHall(halls[0])
+      // Try to find a hall matching the selected genre
+      const hallsMeta = (rawEventMap as any)?.halls ?? [];
+      let best = halls[0];
+      if (selectedGenre && selectedGenre !== 'ANY') {
+        const match = halls.find(h => {
+          const meta = hallsMeta.find((m: any) => m.hallName === h || m.name === h);
+          const cat = (meta?.mainCategory || meta?.category || '').toUpperCase();
+          return cat === selectedGenre;
+        });
+        if (match) best = match;
+      }
+      setSelectedHall(best)
     } else if (halls.length === 0) {
       setSelectedHall(null)
     }
-  }, [halls, selectedHall])
+  }, [halls, selectedHall, selectedGenre])
 
   const displayedStalls = useMemo(
     () => (selectedHall ? allStalls.filter((s: MapStall) => s.hallName === selectedHall) : allStalls),
@@ -178,6 +189,50 @@ export default function StallMapPage() {
     )
   }
 
+  // ── Genre Gate — ask before showing map ────────────────────────────────────
+  if (!selectedGenre) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center p-6">
+        <div className="max-w-xl w-full text-center">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400 mb-4">Step 1 of 2</p>
+          <h1 className="text-4xl font-black text-slate-900 tracking-tight mb-3">What do you publish?</h1>
+          <p className="text-slate-500 mb-10 max-w-md mx-auto">
+            Select your primary genre so we can recommend the best hall for your stall.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3 mb-12">
+            {PUBLISHER_GENRES.map(g => (
+              <button
+                key={g.id}
+                onClick={() => setSelectedGenre(g.id)}
+                className="px-6 py-3 rounded-xl text-sm font-bold border-2 border-slate-200
+                           text-slate-700 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50
+                           transition-all active:scale-95"
+              >
+                {g.label}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => setSelectedGenre('ANY')}
+            className="text-xs font-bold text-slate-400 hover:text-slate-700 uppercase tracking-widest transition-colors"
+          >
+            Skip — show me all halls
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // Helper: check if a hall is recommended for the selected genre
+  const isRecommended = (hall: string): boolean => {
+    if (selectedGenre === 'ANY') return false;
+    const hallMeta = (rawEventMap as any)?.halls?.find((h: any) => h.hallName === hall || h.name === hall);
+    if (!hallMeta) return false;
+    // Match genre to hall's mainCategory (or tier-based logic)
+    const category = (hallMeta.mainCategory || hallMeta.category || '').toUpperCase();
+    return category === selectedGenre;
+  }
+
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col min-h-screen bg-white overflow-x-hidden">
@@ -210,12 +265,17 @@ export default function StallMapPage() {
                 key={hall}
                 onClick={() => setSelectedHall(hall)}
                 className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-[11px] font-bold
-                            uppercase tracking-wider transition-all ${selectedHall === hall
+                            uppercase tracking-wider transition-all flex items-center gap-1.5 ${selectedHall === hall
                     ? 'bg-slate-900 text-white'
-                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                    : isRecommended(hall)
+                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
+                      : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
                   }`}
               >
                 {hall.length > 20 ? hall.split(' ').slice(-2).join(' ') : hall}
+                {isRecommended(hall) && selectedHall !== hall && (
+                  <span className="text-[8px] bg-emerald-500 text-white px-1.5 py-0.5 rounded-full font-black normal-case tracking-normal">★ Rec</span>
+                )}
               </button>
             ))}
           </div>
@@ -279,7 +339,14 @@ export default function StallMapPage() {
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6 border-b border-slate-100 pb-6">
                 <div>
                   <h2 className="text-2xl font-bold text-slate-900">{currentHall.name}</h2>
-                  <p className="text-slate-500 font-medium text-sm mt-1 uppercase tracking-wide">Hall Specification</p>
+                  <div className="flex items-center gap-3 mt-1">
+                    <p className="text-slate-500 font-medium text-sm uppercase tracking-wide">Hall Specification</p>
+                    {(currentHall.mainCategory || currentHall.category) && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200">
+                        {(currentHall.mainCategory || currentHall.category).replace('_', ' ')}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className={`inline-flex px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider border ${currentHall.tier === 'VIP' ? 'bg-amber-100 text-amber-700 border-amber-200' :
                   currentHall.tier === 'PREMIUM' ? 'bg-purple-100 text-purple-700 border-purple-200' :
@@ -289,14 +356,15 @@ export default function StallMapPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-8">
+                {/* Row 1: The Basics */}
                 <div className="space-y-1">
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Floor Level</p>
-                  <p className="text-lg font-bold text-slate-900">Level {currentHall.floor ?? 'G'}</p>
+                  <p className="text-lg font-bold text-slate-900">Level {currentHall.floorLevel ?? currentHall.floor ?? 'G'}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Area</p>
-                  <p className="text-lg font-bold text-slate-900">{currentHall.sqFt ? `${currentHall.sqFt.toLocaleString()} sqft` : '—'}</p>
+                  <p className="text-lg font-bold text-slate-900">{currentHall.totalSqFt || currentHall.sqFt ? `${(currentHall.totalSqFt || currentHall.sqFt).toLocaleString()} sqft` : '—'}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Capacity</p>
@@ -304,19 +372,41 @@ export default function StallMapPage() {
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Environment</p>
-                  <div className="flex items-center gap-2">
-                    {currentHall.isAc ? (
+                  <div className="flex items-center gap-2 mt-1">
+                    {currentHall.isAirConditioned || currentHall.isAc ? (
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-cyan-50 text-cyan-700 text-xs font-bold border border-cyan-100">
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         A/C
                       </span>
                     ) : (
-                      <span className="text-slate-500 font-medium text-sm">Non-A/C</span>
+                      <span className="text-slate-500 font-medium text-sm mt-1">Non-A/C</span>
                     )}
                     <span className="text-slate-300">|</span>
-                    <span className="text-slate-700 font-medium text-sm">Indoor</span>
+                    <span className="text-slate-700 font-medium text-sm">{currentHall.isIndoor ?? true ? 'Indoor' : 'Outdoor'}</span>
                   </div>
                 </div>
+
+                {/* Row 2: Rich Metadata (if available) */}
+                {(currentHall.expectedFootfall || currentHall.ceilingHeight || currentHall.noiseLevel || currentHall.nearbyFacilities) && (
+                  <>
+                    <div className="space-y-1">
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Expected Footfall</p>
+                      <p className="text-lg font-bold text-slate-900">{currentHall.expectedFootfall ? `${currentHall.expectedFootfall.toLocaleString()}/day` : '—'}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Ceiling Height</p>
+                      <p className="text-lg font-bold text-slate-900">{currentHall.ceilingHeight ? `${currentHall.ceilingHeight} ft` : '—'}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Noise Level</p>
+                      <p className="text-lg font-bold text-slate-900 capitalize">{currentHall.noiseLevel ? currentHall.noiseLevel.toLowerCase() : '—'}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Nearby Facilities</p>
+                      <p className="text-sm font-bold text-slate-900 leading-tight block truncate" title={currentHall.nearbyFacilities}>{currentHall.nearbyFacilities || '—'}</p>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>

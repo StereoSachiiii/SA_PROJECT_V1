@@ -4,9 +4,10 @@ interface EntryPassProps {
     qrCode: string | undefined;
     isCancelled: boolean;
     onShowFullscreen: () => void;
+    onDownloadTicket: () => void;
 }
 
-export const EntryPass = ({ qrCode, isCancelled, onShowFullscreen }: EntryPassProps) => {
+export const EntryPass = ({ qrCode, isCancelled, onShowFullscreen, onDownloadTicket }: EntryPassProps) => {
     return (
         <div className={`
             rounded-3xl p-8 border
@@ -42,8 +43,18 @@ export const EntryPass = ({ qrCode, isCancelled, onShowFullscreen }: EntryPassPr
                 {qrCode?.split('-').pop() || 'NO-ID'}
             </p>
 
-            {isCancelled && (
+            {isCancelled ? (
                 <p className="text-red-500 font-black text-xs mt-4 uppercase tracking-widest">CANCELLED</p>
+            ) : (
+                <button
+                    onClick={onDownloadTicket}
+                    className="mt-6 w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-black text-[10px] uppercase tracking-widest rounded-xl transition-colors shadow-lg shadow-slate-200 active:scale-[0.98] flex items-center justify-center gap-2"
+                >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Download Pass
+                </button>
             )}
         </div>
     );

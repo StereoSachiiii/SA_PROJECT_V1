@@ -3,14 +3,12 @@ import { formatCurrency } from '@/shared/utils/format';
 import { adminApi } from '@/shared/api/adminApi';
 import { publicApi } from '@/shared/api/publicApi';
 import { PageEnvelope, Event, AdminDashboardStats, AuditLog, SystemHealth } from '@/shared/types/api';
-import { Link } from 'react-router-dom';
 import MetricsCard from '@/apps/admin/components/Dashboard/MetricsCard';
 import HealthPreview from '@/apps/admin/components/Dashboard/HealthPreview';
 import {
     Users,
     Ticket,
     Banknote,
-    CalendarDays,
     TrendingUp
 } from 'lucide-react';
 
@@ -204,23 +202,6 @@ export default function Dashboard() {
                         {/* Side Panels */}
                         <div className="space-y-8">
                             <HealthPreview health={health} onRefresh={loadInitialData} />
-
-                            <div className="bg-indigo-600 p-8 rounded-[2.5rem] shadow-2xl shadow-indigo-100 text-white relative overflow-hidden group">
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
-                                <div className="relative z-10">
-                                    <h4 className="font-black uppercase text-[10px] tracking-[0.3em] opacity-60 mb-6">Upcoming Event</h4>
-                                    <div className="text-2xl font-black tracking-tight leading-tight mb-4">Colombo Bookfair 2026</div>
-                                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest opacity-80 mb-10">
-                                        <CalendarDays size={14} strokeWidth={3} />
-                                        Sept 18 - Sept 25
-                                    </div>
-                                    <Link to="/admin/stalls">
-                                        <button className="w-full bg-white text-indigo-600 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all hover:bg-slate-50 active:scale-95 shadow-lg">
-                                            Architect Layout
-                                        </button>
-                                    </Link>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>

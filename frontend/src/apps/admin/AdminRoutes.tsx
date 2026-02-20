@@ -4,13 +4,12 @@ import AdminLayout from './components/Layout/AdminLayout'; // Updated path
 
 // Pages
 import AdminDashboardPage from './pages/Dashboard';
-import StallMapDesigner from './pages/StallMapDesigner';
+import StallDesignerPage from './pages/StallDesigner/StallDesignerPage';
 import AdminReservationManager from './pages/AdminReservationManager';
 import HallManagement from './pages/HallManagement';
-import StallInventory from './pages/StallInventory';
+
 import RefundsPage from './pages/Refunds';
 import AuditLogsPage from './pages/AuditLogs';
-import StallPricingPage from './pages/StallPricing';
 import SystemHealthPage from './pages/SystemHealth';
 import VendorDocuments from './pages/VendorDocuments';
 import VendorReservationDetailPage from '../vendor/pages/VendorReservationDetailPage';
@@ -28,11 +27,11 @@ const AdminRoutes = () => {
         <Routes>
             <Route element={<ProtectedRoute allowedRoles={['ADMIN']}><AdminLayout /></ProtectedRoute>}>
                 <Route path="dashboard" element={<AdminDashboardPage />} />
-                <Route path="designer" element={<StallMapDesigner />} />
+                <Route path="halls/:hallId/designer" element={<StallDesignerPage />} />
                 <Route path="reservations" element={<AdminReservationManager />} />
                 <Route path="reservations/:id" element={<VendorReservationDetailPage />} />
                 <Route path="halls" element={<HallManagement />} />
-                <Route path="halls/:id/inventory" element={<StallInventory />} />
+
                 <Route path="refunds" element={<RefundsPage />} />
                 <Route path="audit-logs" element={<AuditLogsPage />} />
                 <Route path="health" element={<SystemHealthPage />} />

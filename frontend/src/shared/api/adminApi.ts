@@ -118,8 +118,16 @@ export const adminApi = {
         return response.data;
     },
 
-    exportReservationsCsv: (): string => {
-        return `${api.defaults.baseURL}/admin/reservations/export`;
+    exportReservationsCsv: async (): Promise<void> => {
+        const response = await api.get('/admin/reservations/export', { responseType: 'blob' });
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'reservations.csv');
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
     },
 
     // ─── REFUNDS ─────────────────────────────────────────────────
@@ -206,8 +214,16 @@ export const adminApi = {
         return response.data;
     },
 
-    exportStallsCsv: (hallId: number): string => {
-        return `${api.defaults.baseURL}/admin/halls/${hallId}/stalls/export`;
+    exportStallsCsv: async (hallId: number): Promise<void> => {
+        const response = await api.get(`/admin/halls/${hallId}/stalls/export`, { responseType: 'blob' });
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `stalls-hall-${hallId}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
     },
 
     // ─── PRICING ─────────────────────────────────────────────────

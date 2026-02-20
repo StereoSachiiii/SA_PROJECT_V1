@@ -25,6 +25,7 @@ export interface MapStall {
     reserved: boolean
     type?: string
     size?: string
+    category?: string
     geometry: StallGeometry | string
     pricingBreakdown?: PricingBreakdown
     occupiedBy?: string | null

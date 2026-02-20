@@ -41,7 +41,7 @@ export default function Hero() {
 
                     {/* Primary */}
                     <Link
-                        to="/stalls"
+                        to="/events"
                         className="group relative inline-flex items-center justify-center 
                         px-10 py-5 rounded-2xl text-lg font-bold 
                         text-white bg-primary-500

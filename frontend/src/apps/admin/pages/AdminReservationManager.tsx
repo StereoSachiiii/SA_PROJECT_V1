@@ -105,12 +105,12 @@ export default function AdminReservationManager() {
         }
     };
 
-    const handleExport = () => {
-        const url = adminApi.exportReservationsCsv();
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'reservations.csv';
-        link.click();
+    const handleExport = async () => {
+        try {
+            await adminApi.exportReservationsCsv();
+        } catch (err: any) {
+            setError('Failed to export CSV.');
+        }
     };
 
     const handleAction = (e: React.MouseEvent, type: 'PAYMENT' | 'CANCEL' | 'REFUND' | 'DOCS', res: Reservation) => {

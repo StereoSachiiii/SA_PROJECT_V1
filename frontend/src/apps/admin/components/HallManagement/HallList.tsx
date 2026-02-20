@@ -1,5 +1,5 @@
 import React from 'react';
-import { Building2, FileText, Globe, Edit, Archive, Plus, PenTool } from 'lucide-react';
+import { Building2, Globe, Edit, Archive, PenTool } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Hall } from '@/shared/types/api';
 import { StatusBadge } from '@/shared/components/StatusBadge';
@@ -9,7 +9,6 @@ interface HallListProps {
     onPublish: (hall: Hall) => void;
     onArchive: (hall: Hall) => void;
     onEdit: (hall: Hall) => void;
-    onOpenCreate: () => void;
 }
 
 export const HallList: React.FC<HallListProps> = ({
@@ -17,7 +16,6 @@ export const HallList: React.FC<HallListProps> = ({
     onPublish,
     onArchive,
     onEdit,
-    onOpenCreate
 }) => {
     const getTierColor = (tier: string) => {
         switch (tier) {
@@ -68,18 +66,11 @@ export const HallList: React.FC<HallListProps> = ({
 
                     <div className="px-6 pb-4 flex gap-2">
                         <Link
-                            to={`/admin/halls/${hall.id}/inventory`}
-                            className="flex-1 text-center py-2 bg-gray-50 hover:bg-gray-900 hover:text-white rounded-lg font-bold text-[10px] uppercase transition-all flex items-center justify-center gap-1.5"
-                        >
-                            <FileText size={12} />
-                            Inventory
-                        </Link>
-                        <Link
-                            to="/admin/designer"
+                            to={`/admin/halls/${hall.id}/designer`}
                             className="flex-1 text-center py-2 bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white rounded-lg font-bold text-[10px] uppercase transition-all flex items-center justify-center gap-1.5"
                         >
                             <PenTool size={12} />
-                            Stall Map Designer
+                            Design Layout
                         </Link>
                         {hall.status !== 'PUBLISHED' && (
                             <button
