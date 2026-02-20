@@ -1,12 +1,14 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import RegisterPage from './pages/RegisterPage'
-import LoginPage from './pages/LoginPage'
+import LoginPage from "./pages/EmployeePortalPage"; 
 import StallMapPage from './pages/StallMapPage'
 import HomePage from './pages/HomePage'
 import EmployeePortalPage from './pages/EmployeePortalPage'
-import Layout from './components/Layout'
-import EmployeeLayout from './components/EmployeeLayout'
+import Layout from './types/Layout'
+import EmployeeLayout from './types/EmployeeLayout'
 import { useAuth } from './context/AuthContext'
+
+// ...existing code...
 
 /**
  * Protected Route: Only for authenticated users
