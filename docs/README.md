@@ -23,4 +23,5 @@ Welcome to the official documentation for the **SA_PROJECT**. This guide provide
 - [Test Plan](test_plan.md): Testing strategies and critical scenarios.
 
 ---
-*Documentation generated on 2026-02-20.*
+Made on 20/02/2026
+
