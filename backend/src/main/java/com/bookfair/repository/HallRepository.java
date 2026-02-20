@@ -9,4 +9,5 @@ import java.util.List;
 public interface HallRepository extends JpaRepository<Hall, Long> {
     List<Hall> findByBuildingVenueId(Long venueId);
     List<Hall> findByBuilding_Id(Long buildingId);
+    java.util.Optional<Hall> findByName(String name);
 }

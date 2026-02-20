@@ -87,6 +87,14 @@ public class AdminController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/halls/{id}/static-layout")
+    public ResponseEntity<Map<String, Object>> updateHallLayout(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> payload) {
+        adminService.updateHallLayout(id, payload.get("staticLayout"));
+        return ResponseEntity.ok(Map.of("updated", true));
+    }
+
     // ─── STALL INVENTORY ────────────────────────────────────────
 
     @GetMapping("/halls/{id}/stalls")

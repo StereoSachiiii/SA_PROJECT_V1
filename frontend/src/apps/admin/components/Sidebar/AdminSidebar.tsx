@@ -6,12 +6,14 @@ import {
     FileSearch,
     Tag,
     Activity,
-    MapPin
+    MapPin,
+    PenTool
 } from 'lucide-react';
 
 const navItems = [
     { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
     { name: 'Hall Management', path: '/admin/halls', icon: MapPin },
+    { name: 'Stall Map Designer', path: '/admin/designer', icon: PenTool },
     { name: 'Reservations', path: '/admin/reservations', icon: ClipboardList },
     { name: 'Refunds', path: '/admin/refunds', icon: Undo2 },
     { name: 'Audit Logs', path: '/admin/audit-logs', icon: FileSearch },

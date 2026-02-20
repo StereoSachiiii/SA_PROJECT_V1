@@ -33,6 +33,7 @@ public class AdminService {
     private final EventStallRepository eventStallRepository;
     private final StallTemplateRepository stallTemplateRepository;
     private final ReservationRepository reservationRepository;
+    private final HallRepository hallRepository;
     private final UserRepository userRepository;
     private final AuditLogRepository auditLogRepository;
     private final ObjectMapper objectMapper;
@@ -78,12 +79,13 @@ public class AdminService {
 
     @Transactional
     public List<EventStall> saveEventLayout(Long eventId, List<com.bookfair.dto.request.EventStallUpdateRequest> stalls) {
-        if (stalls == null || stalls.isEmpty()) return List.of();
-        eventRepository.findById(eventId)
+        if (stalls == null) return List.of();
+        Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ResourceNotFoundException("Event not found"));
 
-        List<EventStall> updated = stalls.stream().map(dto -> {
+        List<EventStall> updatedItems = stalls.stream().map(dto -> {
             if (dto.getId() != null) {
+                // Existing EventStall
                 EventStall existing = eventStallRepository.findById(dto.getId())
                         .orElseThrow(() -> new ResourceNotFoundException("Stall not found: " + dto.getId()));
                 existing.setGeometry(dto.getGeometry());
@@ -91,12 +93,55 @@ public class AdminService {
                 if (dto.getFinalPriceCents() != null) {
                     existing.setFinalPriceCents(dto.getFinalPriceCents());
                 }
+                if (dto.getName() != null && existing.getStallTemplate() != null) {
+                    existing.getStallTemplate().setName(dto.getName());
+                }
                 return existing;
+            } else if (dto.getName() != null && dto.getHallName() != null) {
+                // Create New Stall
+                Hall hall = hallRepository.findByName(dto.getHallName())
+                        .orElseThrow(() -> new ResourceNotFoundException("Hall not found: " + dto.getHallName()));
+                
+                // 1. Create StallTemplate
+                StallTemplate template = StallTemplate.builder()
+                        .name(dto.getName())
+                        .hall(hall)
+                        .size(StallSize.MEDIUM) // Default
+                        .type(StallType.STANDARD)
+                        .category(StallCategory.RETAIL)
+                        .basePriceCents(dto.getFinalPriceCents() != null ? dto.getFinalPriceCents() : 500000L)
+                        .defaultProximityScore(50)
+                        .geometry(dto.getGeometry())
+                        .isAvailable(true)
+                        .build();
+                template = stallTemplateRepository.save(template);
+
+                // 2. Create EventStall
+                EventStall es = EventStall.builder()
+                        .event(event)
+                        .stallTemplate(template)
+                        .baseRateCents(template.getBasePriceCents())
+                        .multiplier(1.0)
+                        .proximityBonusCents(0L)
+                        .finalPriceCents(template.getBasePriceCents())
+                        .geometry(dto.getGeometry())
+                        .status(EventStallStatus.AVAILABLE)
+                        .pricingVersion("DESIGNER_INIT")
+                        .build();
+                return es;
             }
             return null;
         }).filter(java.util.Objects::nonNull).collect(Collectors.toList());
 
-        return eventStallRepository.saveAll(updated);
+        return eventStallRepository.saveAll(updatedItems);
+    }
+
+    @Transactional
+    public void updateHallLayout(Long hallId, String staticLayoutJson) {
+        Hall hall = hallRepository.findById(hallId)
+                .orElseThrow(() -> new ResourceNotFoundException("Hall not found: " + hallId));
+        hall.setStaticLayout(staticLayoutJson);
+        hallRepository.save(hall);
     }
 
     // ─── DASHBOARD ────────────────────────────────────────────────

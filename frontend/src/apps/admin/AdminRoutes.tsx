@@ -4,7 +4,7 @@ import AdminLayout from './components/Layout/AdminLayout'; // Updated path
 
 // Pages
 import AdminDashboardPage from './pages/Dashboard';
-import AdminStallDesigner from './pages/AdminStallDesigner';
+import StallMapDesigner from './pages/StallMapDesigner';
 import AdminReservationManager from './pages/AdminReservationManager';
 import HallManagement from './pages/HallManagement';
 import StallInventory from './pages/StallInventory';
@@ -28,7 +28,7 @@ const AdminRoutes = () => {
         <Routes>
             <Route element={<ProtectedRoute allowedRoles={['ADMIN']}><AdminLayout /></ProtectedRoute>}>
                 <Route path="dashboard" element={<AdminDashboardPage />} />
-                <Route path="designer" element={<AdminStallDesigner />} />
+                <Route path="designer" element={<StallMapDesigner />} />
                 <Route path="reservations" element={<AdminReservationManager />} />
                 <Route path="reservations/:id" element={<VendorReservationDetailPage />} />
                 <Route path="halls" element={<HallManagement />} />

@@ -175,6 +175,11 @@ export const adminApi = {
         await api.delete(`/admin/halls/${id}/destroy`);
     },
 
+    updateHallLayout: async (id: number, staticLayout: string): Promise<{ updated: boolean }> => {
+        const response = await api.post<{ updated: boolean }>(`/admin/halls/${id}/static-layout`, { staticLayout });
+        return response.data;
+    },
+
     // ─── STALL INVENTORY ─────────────────────────────────────────
     getStallsByHall: async (hallId: number): Promise<StallTemplate[]> => {
         const response = await api.get<StallTemplate[]>(`/admin/halls/${hallId}/stalls`);

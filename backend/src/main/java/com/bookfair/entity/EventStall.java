@@ -41,10 +41,12 @@ public class EventStall {
     private Long baseRateCents;
 
     @Column(nullable = false)
-    private Double multiplier;
+    @Builder.Default
+    private Double multiplier = 1.0;
 
     @Column(nullable = false)
-    private Long proximityBonusCents;
+    @Builder.Default
+    private Long proximityBonusCents = 0L;
 
     @Column(nullable = false)
     private Long finalPriceCents;
