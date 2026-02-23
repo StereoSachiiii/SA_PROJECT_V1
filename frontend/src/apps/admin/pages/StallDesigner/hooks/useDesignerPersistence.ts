@@ -85,7 +85,11 @@ export function useDesignerPersistence() {
             setMessage({ text: 'Layout & zones saved successfully!', type: 'success' });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
             const freshMapData = await publicApi.getEventMap(event.id);
+=======
+            const freshMapData = await publicApi.getEventMap(event.id, true);
+>>>>>>> main
 =======
             const freshMapData = await publicApi.getEventMap(event.id, true);
 >>>>>>> main

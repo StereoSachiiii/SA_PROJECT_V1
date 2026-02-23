@@ -137,7 +137,11 @@ public class PublicController {
 
         return ResponseEntity.ok()
 <<<<<<< HEAD
+<<<<<<< HEAD
                 .cacheControl(org.springframework.http.CacheControl.maxAge(5, java.util.concurrent.TimeUnit.MINUTES))
+=======
+                .cacheControl(org.springframework.http.CacheControl.maxAge(5, java.util.concurrent.TimeUnit.SECONDS))
+>>>>>>> main
 =======
                 .cacheControl(org.springframework.http.CacheControl.maxAge(5, java.util.concurrent.TimeUnit.SECONDS))
 >>>>>>> main

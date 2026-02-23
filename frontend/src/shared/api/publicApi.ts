@@ -37,7 +37,11 @@ export const publicApi = {
 
     // GET EVENT MAP
 <<<<<<< HEAD
+<<<<<<< HEAD
     getEventMap: async (eventId: number): Promise<{
+=======
+    getEventMap: async (eventId: number, refresh = false): Promise<{
+>>>>>>> main
 =======
     getEventMap: async (eventId: number, refresh = false): Promise<{
 >>>>>>> main
@@ -62,7 +66,13 @@ export const publicApi = {
             mapWidth?: number;
             mapHeight?: number;
 <<<<<<< HEAD
+<<<<<<< HEAD
         }>(`/public/events/${eventId}/map`);
+=======
+        }>(`/public/events/${eventId}/map`, {
+            params: refresh ? { _t: Date.now() } : {}
+        });
+>>>>>>> main
 =======
         }>(`/public/events/${eventId}/map`, {
             params: refresh ? { _t: Date.now() } : {}
