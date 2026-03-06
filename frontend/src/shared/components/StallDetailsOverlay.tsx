@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import { createPortal } from 'react-dom'
-import type { Stall } from '../types'
+import { EventStall as Stall } from '@/shared/types/api'
 
 interface StallDetailsOverlayProps {
     stall: Stall;

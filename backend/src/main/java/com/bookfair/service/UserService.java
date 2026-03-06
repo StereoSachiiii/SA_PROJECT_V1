@@ -63,12 +63,16 @@ public class UserService {
     }
     
     public User getByIdForServices(Long id) {
-
         if (id == null) {
             throw new IllegalArgumentException("User ID cannot be null");
         }
         return userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public java.util.Optional<User> findByIdWithLock(Long id) {
+        return userRepository.findByIdWithLock(id);
     }
 
     public UserResponse getById(Long id) {
@@ -141,8 +145,7 @@ public class UserService {
             user.getLogoUrl(),
             (user.getCategories() != null) ? user.getCategories().stream().map(Enum::name).collect(java.util.stream.Collectors.toList()) : java.util.Collections.emptyList(),
             user.getContactNumber(),
-            user.getAddress(),
-            user.getReservedStallsCount()
+            user.getAddress()
         );
     }
 }

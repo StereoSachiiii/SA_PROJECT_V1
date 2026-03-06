@@ -10,4 +10,7 @@ public interface CheckInLogRepository extends JpaRepository<CheckInLog, Long> {
     List<CheckInLog> findByReservationId(Long reservationId);
     List<CheckInLog> findByEmployeeId(Long employeeId);
     boolean existsByReservationId(Long reservationId);
+
+    long countByReservation_EventStall_Event_Id(Long eventId);
+    List<CheckInLog> findByReservation_EventStall_Event_Id(Long eventId);
 }

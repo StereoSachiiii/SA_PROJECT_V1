@@ -164,7 +164,7 @@ export const HallWizard: React.FC<HallWizardProps> = ({
                             <Building2 size={20} />
                         </div>
                         <h3 className="font-bold text-gray-900">{building.name}</h3>
-                        <p className="text-gray-400 text-[10px] font-bold uppercase mt-1 tracking-widest">{building.gpsCoordinates || 'No GPS Data'}</p>
+                        <p className="text-gray-400 text-[10px] font-bold uppercase mt-1 tracking-widest">{building.gpsLocation || 'No GPS Data'}</p>
                         <div className="mt-6 pt-4 border-t border-gray-50 flex items-center justify-between text-[10px] font-bold uppercase text-gray-400 group-hover:text-amber-500 transition-colors">
                             <span>Manage Halls</span>
                             <ChevronRight size={14} />

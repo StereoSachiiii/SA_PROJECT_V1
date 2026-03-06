@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: bookfair
+      POSTGRES_USER: bookfair
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - bookfair-net
+
+  redis:
+    image: redis:7-alpine
+    networks:
+      - bookfair-net
+
+  backend:
+    image: bookfair-backend
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/bookfair
+      DB_USERNAME: bookfair
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_MS: 86400000
+      FRONTEND_URL: https://eazyfair.duckdns.org
+      BACKEND_URL: https://eazyfair.duckdns.org
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_PUBLIC_KEY: ${STRIPE_PUBLIC_KEY}
+      FILE_UPLOAD_DIR: uploads/
+      MAX_STALLS: 3
+      STALL_SMALL_PRICE: 500000
+      STALL_MEDIUM_PRICE: 1000000
+      STALL_LARGE_PRICE: 2000000
+      VIP_MULTIPLIER: 1.2
+      SEED_ADMIN_USER: admin
+      SEED_ADMIN_PASS: ${SEED_ADMIN_PASS}
+      SEED_VENDOR_USER: vendor
+      SEED_VENDOR_PASS: ${SEED_VENDOR_PASS}
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - bookfair-net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: https://eazyfair.duckdns.org/api/v1
+        VITE_STRIPE_KEY: ${STRIPE_PUBLIC_KEY}
+    image: bookfair-frontend
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - backend
+    networks:
+      - bookfair-net
+
+networks:
+  bookfair-net:
+
+
+volumes:
+  postgres_data:

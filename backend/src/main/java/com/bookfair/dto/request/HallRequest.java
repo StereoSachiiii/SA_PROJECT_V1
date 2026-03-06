@@ -37,6 +37,6 @@ public class HallRequest {
     private Double distanceFromParking;
     private Boolean isGroundFloor;
     
-    // Layout JSON
-    private String staticLayout;
+    // Digital layout constraints
+    private java.util.List<PhysicalConstraintRequest> constraints;
 }

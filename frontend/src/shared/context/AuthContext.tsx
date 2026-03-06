@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from '../types/api';
-// We might import authApi to validate token on load, but for now we trust localStorage until 401 interceptor hits.
+import { vendorApi } from '../api/vendorApi';
 
 /**
  * Authentication Context Type Definition
@@ -45,8 +45,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 // If we have token but user is missing or broken string "undefined"
                 if (!storedUser || storedUser === 'undefined') {
                     try {
-                        // Import dynamically to avoid circular dependency if any
-                        const { vendorApi } = await import('../api/vendorApi');
                         const profile = await vendorApi.getProfile();
                         if (profile && profile.id) {
                             setUser(profile);

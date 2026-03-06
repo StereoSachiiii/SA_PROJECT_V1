@@ -8,8 +8,8 @@ import {
 
 export const employeeApi = {
     // DASHBOARD STATS
-    getDashboardStats: async (): Promise<DashboardStats> => {
-        const response = await api.get<DashboardStats>('/employee/dashboard');
+    getDashboardStats: async (eventId: number): Promise<DashboardStats> => {
+        const response = await api.get<DashboardStats>(`/employee/dashboard?eventId=${eventId}`);
         return response.data;
     },
 
@@ -40,8 +40,8 @@ export const employeeApi = {
     },
 
     // EXPORT ATTENDANCE (Blob)
-    exportAttendance: async (): Promise<Blob> => {
-        const response = await api.get('/employee/attendance/export', {
+    exportAttendance: async (eventId: number): Promise<Blob> => {
+        const response = await api.get(`/employee/attendance/export?eventId=${eventId}`, {
             responseType: 'blob'
         });
         return response.data;

@@ -13,7 +13,7 @@ export const DashboardStats = ({ limit, used, remaining }: DashboardStatsProps) 
                     <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Stall Limit</h3>
                     <div className="flex items-baseline gap-2">
                         <span className="text-5xl font-black text-slate-900 tracking-tighter">{limit}</span>
-                        <span className="text-xs font-bold text-slate-300">Total</span>
+                        <span className="text-xs font-bold text-slate-300">Per Event</span>
                     </div>
                 </div>
             </div>

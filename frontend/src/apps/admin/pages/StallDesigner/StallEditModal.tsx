@@ -85,13 +85,15 @@ export function StallEditModal() {
                     <div>
                         <label className="text-[10px] font-bold text-gray-400 uppercase mb-2 block">Canvas Position (%)</label>
                         <div className="grid grid-cols-4 gap-2">
-                            {(['x', 'y', 'w', 'h'] as const).map(key => (
+                            {(['posX', 'posY', 'width', 'height'] as const).map(key => (
                                 <div key={key}>
-                                    <span className="text-[9px] font-bold text-gray-300 uppercase block mb-1">{key === 'w' ? 'Width' : key === 'h' ? 'Height' : key.toUpperCase()}</span>
+                                    <span className="text-[9px] font-bold text-gray-300 uppercase block mb-1">
+                                        {key === 'width' ? 'Width' : key === 'height' ? 'Height' : key.replace('pos', '').toUpperCase()}
+                                    </span>
                                     <input
                                         type="number" step="0.1"
-                                        value={stall.geometry[key].toFixed(1)}
-                                        onChange={e => updateStall(stall.id, { geometry: { ...stall.geometry, [key]: parseFloat(e.target.value) } })}
+                                        value={(stall[key] || 0).toFixed(1)}
+                                        onChange={e => updateStall(stall.id, { [key]: parseFloat(e.target.value) })}
                                         className="w-full border border-gray-200 rounded px-2 py-1.5 text-xs font-bold text-center"
                                     />
                                 </div>

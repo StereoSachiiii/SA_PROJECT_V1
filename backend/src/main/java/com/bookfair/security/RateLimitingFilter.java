@@ -7,6 +7,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -19,13 +20,18 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class RateLimitingFilter extends OncePerRequestFilter {
 
-    // Simple in-memory storage for buckets per IP. 
+    @Value("${app.ratelimit.capacity:100}")
+    private int capacity;
+
+    @Value("${app.ratelimit.refill-seconds:60}")
+    private int refillSeconds;
+
+    // Simple in-memory storage for buckets per IP.
     // For a distributed system, this should be moved to Redis.
     private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
 
     private Bucket createNewBucket() {
-        // Allow 100 requests per minute
-        Bandwidth limit = Bandwidth.classic(100, Refill.greedy(100, Duration.ofMinutes(1)));
+        Bandwidth limit = Bandwidth.classic(capacity, Refill.greedy(capacity, Duration.ofSeconds(refillSeconds)));
         return Bucket.builder()
                 .addLimit(limit)
                 .build();

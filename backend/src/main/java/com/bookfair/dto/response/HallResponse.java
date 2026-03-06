@@ -29,6 +29,6 @@ public class HallResponse {
     private Double distanceFromParking;
     private Boolean isGroundFloor;
     
-    // Layout DO NOT INCLUDE JSON IN LIST VIEW USUALLY, BUT FOR ADMIN TABLE IT MIGHT BE OKAY. 
-    // IGNORING LAYOUT STRING FOR NOW TO KEEP IT LIGHT.
+    // Digital layout constraints
+    private java.util.List<PhysicalConstraintResponse> constraints;
 }

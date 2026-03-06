@@ -10,4 +10,7 @@ public interface HallRepository extends JpaRepository<Hall, Long> {
     List<Hall> findByBuildingVenueId(Long venueId);
     List<Hall> findByBuilding_Id(Long buildingId);
     java.util.Optional<Hall> findByName(String name);
+
+    @org.springframework.data.jpa.repository.Query("SELECT DISTINCT h.mainCategory FROM Hall h WHERE h.mainCategory IS NOT NULL")
+    List<com.bookfair.entity.PublisherCategory> findDistinctMainCategories();
 }

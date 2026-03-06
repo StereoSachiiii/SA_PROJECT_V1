@@ -61,5 +61,11 @@ export const vendorApi = {
     updateProfile: async (data: Partial<User>): Promise<User> => {
         const response = await api.patch<User>('/vendor/profile', data);
         return response.data;
+    },
+
+    // Help Bot Interaction
+    askQuestion: async (query: string): Promise<{ answer: string }> => {
+        const response = await api.post<{ answer: string }>('/public/help/ask', { query });
+        return response.data;
     }
 };

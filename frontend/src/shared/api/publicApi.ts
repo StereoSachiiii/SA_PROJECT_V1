@@ -4,6 +4,8 @@ import {
     Event,
     Venue,
     EventStall,
+    MapZone,
+    MapInfluence
 } from '@/shared/types/api';
 
 export const publicApi = {
@@ -34,42 +36,39 @@ export const publicApi = {
     },
 
     // GET EVENT MAP
-    getEventMap: async (eventId: number): Promise<{ eventId: number; eventName: string; stalls: EventStall[]; zones: string; halls?: any[] }> => {
-        const response = await api.get<{ eventId: number; eventName: string; stalls: EventStall[]; layout?: Record<string, any>; zones?: string; halls?: any[] }>(`/public/events/${eventId}/map`);
-
-        // Map and parse geometry JSON string into object for stalls
-        const stalls = response.data.stalls.map((stall: EventStall) => {
-            let parsedGeometry = { x: 0, y: 0, w: 10, h: 10 };
-            if (stall.geometry) {
-                try {
-                    parsedGeometry = typeof stall.geometry === 'string'
-                        ? JSON.parse(stall.geometry)
-                        : stall.geometry;
-                } catch (e) {
-                    // Fail gracefully for malformed geometry
-                }
-            }
-            return {
-                ...stall,
-                geometry: parsedGeometry
-            };
-        });
-
-        // Handle both old `zones` field and new `layout` field from backend
-        // Backend returns layout as nested object, we stringify it for consistency
-        let zonesString = '';
-        if (response.data.zones && typeof response.data.zones === 'string') {
-            zonesString = response.data.zones;
-        } else if (response.data.layout && typeof response.data.layout === 'object') {
-            zonesString = JSON.stringify(response.data.layout);
-        }
+    getEventMap: async (eventId: number): Promise<{
+        eventId: number;
+        eventName: string;
+        stalls: EventStall[];
+        zones: MapZone[];
+        influences: MapInfluence[];
+        halls?: any[];
+        mapUrl?: string;
+        mapWidth?: number;
+        mapHeight?: number;
+    }> => {
+        const response = await api.get<{
+            eventId: number;
+            eventName: string;
+            stalls: EventStall[];
+            zones: MapZone[];
+            influences: MapInfluence[];
+            halls?: any[];
+            mapUrl?: string;
+            mapWidth?: number;
+            mapHeight?: number;
+        }>(`/public/events/${eventId}/map`);
 
         return {
             eventId: response.data.eventId,
             eventName: response.data.eventName,
-            stalls,
-            zones: zonesString,
-            halls: response.data.halls || []
+            stalls: response.data.stalls || [],
+            zones: response.data.zones || [],
+            influences: response.data.influences || [],
+            halls: response.data.halls || [],
+            mapUrl: response.data.mapUrl,
+            mapWidth: response.data.mapWidth,
+            mapHeight: response.data.mapHeight
         };
     }
 };

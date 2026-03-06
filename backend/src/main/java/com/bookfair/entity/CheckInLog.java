@@ -1,6 +1,7 @@
 package com.bookfair.entity;
 
 import jakarta.persistence.*;
+import com.bookfair.features.reservation.Reservation;
 import lombok.*;
 import java.time.LocalDateTime;
 

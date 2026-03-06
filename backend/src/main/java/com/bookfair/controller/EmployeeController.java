@@ -3,8 +3,9 @@ package com.bookfair.controller;
 import com.bookfair.dto.response.CheckInResponse;
 import com.bookfair.dto.response.DashboardStats;
 import com.bookfair.dto.response.QrVerificationResponse;
-import com.bookfair.dto.response.ReservationResponse;
-import com.bookfair.repository.ReservationRepository;
+import com.bookfair.features.reservation.dto.ReservationResponse;
+import com.bookfair.features.reservation.ReservationController;
+import com.bookfair.features.reservation.ReservationRepository;
 import com.bookfair.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -31,25 +32,28 @@ public class EmployeeController {
     private final UserRepository userRepository;
     private final com.bookfair.repository.CheckInLogRepository checkInLogRepository;
     private final NotificationService notificationService;
-    private final com.bookfair.service.ReservationService reservationService;
+    private final com.bookfair.features.reservation.ReservationService reservationService;
 
     /**
      * Dashboard stats: total stalls, reserved, available, users, reservations.
      * Reserved count is derived from active (PAID or PENDING) reservations.
      */
     @GetMapping("/dashboard")
-    public ResponseEntity<DashboardStats> getDashboardStats() {
-        long totalStalls = eventStallRepository.count();
-        // Count reserved by checking active reservations across all events
-        long reservedStalls = reservationRepository.countByStatusIn(List.of(
-            com.bookfair.entity.Reservation.ReservationStatus.PAID,
-            com.bookfair.entity.Reservation.ReservationStatus.PENDING_PAYMENT
-        ));
+    public ResponseEntity<DashboardStats> getDashboardStats(@RequestParam Long eventId) {
+        long totalStalls = eventStallRepository.findByEvent_Id(eventId).size();
+        
+        long reservedStalls = reservationRepository.findActiveByEventId(eventId).size();
+        
         long availableStalls = totalStalls - reservedStalls;
-        long totalUsers = userRepository.count();
-        long totalReservations = reservationRepository.count();
+        
+        // Count users who have reservations in this event
+        long totalUsers = reservationRepository.findActiveByEventId(eventId).stream()
+                .map(r -> r.getUser().getId()).distinct().count();
+                
+        // Total reservations for the event
+        long totalReservations = reservationRepository.searchReservations("", (com.bookfair.features.reservation.Reservation.ReservationStatus) null, eventId).size();
 
-        long checkedIn = checkInLogRepository.count();
+        long checkedIn = checkInLogRepository.countByReservation_EventStall_Event_Id(eventId);
 
         return ResponseEntity.ok(DashboardStats.builder()
                 .totalStalls(totalStalls)
@@ -74,27 +78,27 @@ public class EmployeeController {
      * Returns a page-style envelope so the frontend's PageEnvelope<Reservation> type is satisfied.
      */
     @GetMapping("/search")
-    public ResponseEntity<java.util.Map<String, Object>> searchReservations(
+    public ResponseEntity<com.bookfair.dto.response.PageResponse<ReservationResponse>> searchReservations(
             @RequestParam(defaultValue = "") String q,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) Long eventId) {
 
-        com.bookfair.entity.Reservation.ReservationStatus statusEnum = status != null && !status.isEmpty() 
-            ? com.bookfair.entity.Reservation.ReservationStatus.valueOf(status) 
+        com.bookfair.features.reservation.Reservation.ReservationStatus statusEnum = status != null && !status.isEmpty() 
+            ? com.bookfair.features.reservation.Reservation.ReservationStatus.valueOf(status) 
             : null;
 
         List<ReservationResponse> results = reservationRepository.searchReservations(q, statusEnum, eventId).stream()
                 .map(ReservationController::mapToResponse)
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(java.util.Map.of(
-            "content", results,
-            "totalElements", results.size(),
-            "totalPages", 1,
-            "size", results.size(),
-            "number", page
-        ));
+        return ResponseEntity.ok(com.bookfair.dto.response.PageResponse.<ReservationResponse>builder()
+                .content(results)
+                .totalElements(results.size())
+                .totalPages(1)
+                .size(results.size())
+                .number(page)
+                .build());
     }
 
     /**
@@ -102,12 +106,12 @@ public class EmployeeController {
      * Exports attendance log as CSV.
      */
     @GetMapping("/attendance/export")
-    public ResponseEntity<byte[]> exportAttendance() {
+    public ResponseEntity<byte[]> exportAttendance(@RequestParam Long eventId) {
         StringBuilder csv = new StringBuilder("LogID,Timestamp,ReservationID,Stall,Vendor,Employee,OverrideReason\n");
-        List<com.bookfair.entity.CheckInLog> logs = checkInLogRepository.findAll();
+        List<com.bookfair.entity.CheckInLog> logs = checkInLogRepository.findByReservation_EventStall_Event_Id(eventId);
         
         for (com.bookfair.entity.CheckInLog log : logs) {
-            com.bookfair.entity.Reservation res = log.getReservation();
+            com.bookfair.features.reservation.Reservation res = log.getReservation();
             csv.append(log.getId()).append(",")
                .append(log.getCheckInTime()).append(",")
                .append(res.getId()).append(",")
@@ -148,7 +152,7 @@ public class EmployeeController {
         
         return reservation
                 .map(res -> {
-                    boolean isPaid = res.getStatus() == com.bookfair.entity.Reservation.ReservationStatus.PAID;
+                    boolean isPaid = res.getStatus() == com.bookfair.features.reservation.Reservation.ReservationStatus.PAID;
                     boolean alreadyCheckedIn = checkInLogRepository.existsByReservationId(res.getId());
                     String stallName = res.getEventStall() != null && res.getEventStall().getStallTemplate() != null ? 
                                        res.getEventStall().getStallTemplate().getName() : "Unknown";
@@ -179,11 +183,11 @@ public class EmployeeController {
             @PathVariable Long reservationId,
             java.security.Principal principal) {
         
-        com.bookfair.entity.Reservation reservation = reservationRepository.findById(reservationId)
+        com.bookfair.features.reservation.Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new com.bookfair.exception.ResourceNotFoundException("Reservation not found"));
         
         // Only PAID reservations can be admitted normally
-        if (reservation.getStatus() != com.bookfair.entity.Reservation.ReservationStatus.PAID) {
+        if (reservation.getStatus() != com.bookfair.features.reservation.Reservation.ReservationStatus.PAID) {
             throw new com.bookfair.exception.BadRequestException("Cannot admit: Status is " + reservation.getStatus());
         }
 
@@ -198,15 +202,11 @@ public class EmployeeController {
     }
 
     @PostMapping("/force-check-in")
-    public ResponseEntity<CheckInResponse> forceCheckIn(@RequestBody Map<String, Object> request, java.security.Principal principal) {
-        Long reservationId = Long.valueOf(request.get("reservationId").toString());
-        String reason = (String) request.get("reason");
-        String adminCode = (String) request.get("adminOverrideCode");
-        
-        com.bookfair.entity.Reservation reservation = reservationRepository.findById(reservationId)
+    public ResponseEntity<CheckInResponse> forceCheckIn(@RequestBody com.bookfair.dto.request.ForceCheckInRequest request, java.security.Principal principal) {
+        com.bookfair.features.reservation.Reservation reservation = reservationRepository.findById(request.getReservationId())
                 .orElseThrow(() -> new com.bookfair.exception.ResourceNotFoundException("Reservation not found"));
 
-        com.bookfair.entity.CheckInLog log = performCheckIn(reservation, principal, reason, adminCode);
+        com.bookfair.entity.CheckInLog log = performCheckIn(reservation, principal, request.getReason(), request.getAdminOverrideCode());
 
         return ResponseEntity.ok(CheckInResponse.builder()
                 .reservationId(reservation.getId())
@@ -217,25 +217,25 @@ public class EmployeeController {
     }
 
     @GetMapping("/qr/test")
-    public ResponseEntity<java.util.Map<String, String>> getTestQrCode() {
+    public ResponseEntity<com.bookfair.dto.response.QrTestResponse> getTestQrCode() {
         // Find first paid reservation (or create a test one)
         var testReservation = reservationRepository.findAll().stream()
-                .filter(r -> r.getStatus() == com.bookfair.entity.Reservation.ReservationStatus.PAID)
+                .filter(r -> r.getStatus() == com.bookfair.features.reservation.Reservation.ReservationStatus.PAID)
                 .findFirst();
         
         if (testReservation.isPresent()) {
-            return ResponseEntity.ok(java.util.Map.of(
-                "qrCode", testReservation.get().getQrCode(),
-                "message", "Test QR code - scan to validate"
-            ));
+            return ResponseEntity.ok(com.bookfair.dto.response.QrTestResponse.builder()
+                .qrCode(testReservation.get().getQrCode())
+                .message("Test QR code - scan to validate")
+                .build());
         }
         
-        return ResponseEntity.badRequest().body(java.util.Map.of(
-            "message", "No test reservations available"
-        ));
+        return ResponseEntity.badRequest().body(com.bookfair.dto.response.QrTestResponse.builder()
+            .message("No test reservations available")
+            .build());
     }
 
-    private com.bookfair.entity.CheckInLog performCheckIn(com.bookfair.entity.Reservation reservation, java.security.Principal principal, String reason, String adminCode) {
+    private com.bookfair.entity.CheckInLog performCheckIn(com.bookfair.features.reservation.Reservation reservation, java.security.Principal principal, String reason, String adminCode) {
         com.bookfair.entity.User employee = userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new com.bookfair.exception.ResourceNotFoundException("Logged in employee not found"));
 
@@ -270,8 +270,8 @@ public class EmployeeController {
      * Cancel a reservation at the gate (e.g. vendor requests cancellation in person).
      */
     @DeleteMapping("/reservations/{id}")
-    public ResponseEntity<Void> cancelReservation(@PathVariable Long id, java.security.Principal principal) {
+    public ResponseEntity<com.bookfair.dto.response.GenericActionResponse> cancelReservation(@PathVariable Long id, java.security.Principal principal) {
         reservationService.cancelReservation(id, principal.getName());
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(new com.bookfair.dto.response.GenericActionResponse(true, "Reservation cancelled"));
     }
 }

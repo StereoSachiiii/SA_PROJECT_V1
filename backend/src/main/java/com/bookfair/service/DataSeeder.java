@@ -2,6 +2,9 @@ package com.bookfair.service;
 
 import com.bookfair.entity.*;
 import com.bookfair.repository.*;
+import com.bookfair.repository.MapInfluenceRepository;
+import com.bookfair.features.reservation.Reservation;
+import com.bookfair.features.reservation.ReservationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.bookfair.constant.LayoutConstants;
@@ -13,7 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Arrays;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Service dedicated to seeding the database with initial data.
@@ -33,6 +38,8 @@ public class DataSeeder {
     private final EventStallRepository eventStallRepository;
     private final ReservationRepository reservationRepository;
     private final PasswordEncoder passwordEncoder;
+    private final PhysicalConstraintRepository physicalConstraintRepository;
+    private final MapInfluenceRepository mapInfluenceRepository;
 
     @org.springframework.beans.factory.annotation.Value("${app.seed.admin.username}")
     private String adminUsername;
@@ -101,7 +108,7 @@ public class DataSeeder {
         Building mainBuilding = new Building();
         mainBuilding.setName("Main Atrium");
         mainBuilding.setVenue(bmich);
-        mainBuilding.setGpsCoordinates("7.2, 80.6");
+        mainBuilding.setGpsLocation("7.2, 80.6");
         buildingRepository.save(mainBuilding);
         
         return bmich;
@@ -112,12 +119,21 @@ public class DataSeeder {
             .filter(b -> b.getVenue().getId().equals(venue.getId()))
             .findFirst().orElseThrow();
 
-        Hall mainHall = new Hall();
-        mainHall.setName("Sirimavo Bandaranaike Memorial Exhibition Centre");
-        mainHall.setBuilding(mainBuilding);
+
+        Hall mainHall = Hall.builder()
+            .name("Sirimavo Bandaranaike Hall")
+            .building(mainBuilding)
+            .totalSqFt(15000.0)
+            .capacity(100)
+            .tier(HallTier.FLAGSHIP)
+            .floorLevel(1)
+            .status(HallStatus.PUBLISHED)
+            .build();
         mainHall.setMainCategory(PublisherCategory.FICTION);
-        mainHall.setStaticLayout(LayoutConstants.SIRIMAVO_LAYOUT);
-        return hallRepository.save(mainHall);
+        mainHall = hallRepository.save(mainHall);
+        
+        seedPhysicalConstraints(mainHall, LayoutConstants.SIRIMAVO_CONSTRAINTS);
+        return mainHall;
     }
 
     private Event seedEvent(Venue venue) {
@@ -130,7 +146,11 @@ public class DataSeeder {
         defaultEvent.setVenue(venue);
         defaultEvent.setStatus(Event.EventStatus.OPEN);
         defaultEvent.setImageUrl("https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=2098&auto=format&fit=crop");
-        return eventRepository.save(defaultEvent);
+        defaultEvent = eventRepository.save(defaultEvent);
+
+        seedMapInfluences(defaultEvent, "Sirimavo Bandaranaike Hall");
+        
+        return defaultEvent;
     }
 
     private void seedStallsAndReservations(Hall mainHall, Event event) {
@@ -148,7 +168,10 @@ public class DataSeeder {
                 template.setName(name);
                 template.setHall(mainHall);
                 template.setDefaultProximityScore(proximity);
-                template.setGeometry(String.format("{\"x\": %d, \"y\": %d, \"w\": 10, \"h\": 10}", col * 10, row * 10));
+                template.setPosX((double)(col * 10));
+                template.setPosY((double)(row * 10));
+                template.setWidth(10.0);
+                template.setHeight(10.0);
 
                 if (proximity >= 9) {
                     template.setSize(StallSize.LARGE);
@@ -217,15 +240,16 @@ public class DataSeeder {
         Building sleccMain = buildingRepository.save(Building.builder()
             .name("Convention Hall A")
             .venue(slecc)
-            .gpsCoordinates("6.9271, 79.8517")
+            .gpsLocation("6.9271, 79.8517")
             .build());
 
         Hall sleccHall1 = hallRepository.save(Hall.builder()
             .name("Main Exhibition Hall")
             .building(sleccMain)
             .mainCategory(PublisherCategory.ACADEMIC)
-            .staticLayout(LayoutConstants.SLECC_MAIN_LAYOUT)
             .build());
+            
+        seedPhysicalConstraints(sleccHall1, LayoutConstants.SLECC_CONSTRAINTS);
 
         Hall sleccHall2 = hallRepository.save(Hall.builder()
             .name("Annex Wing")
@@ -242,8 +266,12 @@ public class DataSeeder {
         complexEvent.setVenue(slecc);
         complexEvent.setStatus(Event.EventStatus.UPCOMING);
         complexEvent.setImageUrl("https://images.unsplash.com/photo-1596522354195-e84ae3c98731?q=80&w=2067&auto=format&fit=crop");
-        complexEvent.setLayoutConfig("{\"mapUrl\": \"https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop\", \"width\": 1000, \"height\": 600}");
+        complexEvent.setMapUrl("https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop");
+        complexEvent.setMapWidth(1000.0);
+        complexEvent.setMapHeight(600.0);
         complexEvent = eventRepository.save(complexEvent);
+
+        seedMapInfluences(complexEvent, "Main Exhibition Hall");
 
         // Circular Cluster
         double centerX = 50;
@@ -270,7 +298,10 @@ public class DataSeeder {
             es.setMultiplier(1.0);
             es.setProximityBonusCents(0L);
             es.setFinalPriceCents(SLECC_MEDIUM_PRICE);
-            es.setGeometry(String.format("{\"x\": %.1f, \"y\": %.1f, \"w\": 10, \"h\": 10}", x, y));
+            es.setPosX(x);
+            es.setPosY(y);
+            es.setWidth(10.0);
+            es.setHeight(10.0);
             eventStallRepository.save(es);
         }
 
@@ -290,7 +321,10 @@ public class DataSeeder {
         centerEs.setMultiplier(VIP_MULTIPLIER);
         centerEs.setProximityBonusCents(500000L);
         centerEs.setFinalPriceCents((long) (SLECC_VIP_PRICE * VIP_MULTIPLIER)); // Example logic
-        centerEs.setGeometry("{\"x\": 42.5, \"y\": 42.5, \"w\": 15, \"h\": 15}");
+        centerEs.setPosX(42.5);
+        centerEs.setPosY(42.5);
+        centerEs.setWidth(15.0);
+        centerEs.setHeight(15.0);
         eventStallRepository.save(centerEs);
         
         seedAnnexWing(sleccHall2, complexEvent);
@@ -316,9 +350,17 @@ public class DataSeeder {
              es.setMultiplier(1.0);
              es.setProximityBonusCents(0L);
              es.setFinalPriceCents(SLECC_ANNEX_PRICE);
-             es.setGeometry(String.format("{\"x\": %d, \"y\": %d, \"w\": 8, \"h\": 8}", 10 + (i * 15), (i % 2 == 0) ? 20 : 60));
+             es.setPosX((double)(10 + (i * 15)));
+             es.setPosY((double)((i % 2 == 0) ? 20 : 60));
+             es.setWidth(8.0);
+             es.setHeight(8.0);
              eventStallRepository.save(es);
         }
+        
+        seedPhysicalConstraints(sleccHall2, java.util.Arrays.asList(
+            PhysicalConstraint.builder().type(PhysicalConstraintType.ENTRANCE).posX(45.0).posY(0.0).width(10.0).height(4.0).label("ANNEX ENTRY").build(),
+            PhysicalConstraint.builder().type(PhysicalConstraintType.FIRE_EXIT).posX(98.0).posY(50.0).width(2.0).height(8.0).label("EXIT").build()
+        ));
     }
 
     private void updateExistingEvents() {
@@ -335,8 +377,10 @@ public class DataSeeder {
                 changed = true;
             }
             // Venue Layout Aerial View for SLECC event
-            if (event.getName().contains("Stationery") && event.getLayoutConfig() == null) {
-                event.setLayoutConfig("{\"mapUrl\": \"https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop\", \"width\": 1000, \"height\": 600}");
+            if (event.getName().contains("Stationery") && event.getMapUrl() == null) {
+                event.setMapUrl("https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop");
+                event.setMapWidth(1000.0);
+                event.setMapHeight(600.0);
                 changed = true;
             }
             if (changed) {
@@ -348,17 +392,108 @@ public class DataSeeder {
 
     private void updateExistingLayouts() {
         hallRepository.findAll().forEach(hall -> {
-            if ("Sirimavo Bandaranaike Memorial Exhibition Centre".equals(hall.getName())) {
-                log.info(">>> REFRESHING BUILDING LAYOUT FOR: " + hall.getName());
-                hall.setStaticLayout(LayoutConstants.SIRIMAVO_LAYOUT);
-                hallRepository.save(hall);
+            if ("Sirimavo Bandaranaike Memorial Exhibition Centre".equals(hall.getName()) && hall.getConstraints().isEmpty()) {
+                seedPhysicalConstraints(hall, LayoutConstants.SIRIMAVO_CONSTRAINTS);
             }
-            if ("Main Exhibition Hall".equals(hall.getName())) {
-                log.info(">>> REFRESHING BUILDING LAYOUT FOR: " + hall.getName());
-                hall.setStaticLayout(LayoutConstants.MAIN_HALL_LAYOUT);
-                hallRepository.save(hall);
+            if ("Main Exhibition Hall".equals(hall.getName()) && hall.getConstraints().isEmpty()) {
+                seedPhysicalConstraints(hall, LayoutConstants.SLECC_CONSTRAINTS);
+            }
+            if ("Annex Wing".equals(hall.getName()) && hall.getConstraints().isEmpty()) {
+                seedPhysicalConstraints(hall, java.util.Arrays.asList(
+                    PhysicalConstraint.builder().type(PhysicalConstraintType.ENTRANCE).posX(45.0).posY(0.0).width(10.0).height(4.0).label("ANNEX ENTRY").build(),
+                    PhysicalConstraint.builder().type(PhysicalConstraintType.FIRE_EXIT).posX(98.0).posY(50.0).width(2.0).height(8.0).label("EXIT").build()
+                ));
             }
         });
+
+        eventRepository.findAll().forEach(event -> {
+            // Find a representing hall name for this event to seed influences
+            eventStallRepository.findByEvent_Id(event.getId()).stream()
+                .findFirst()
+                .map(es -> es.getStallTemplate().getHall().getName())
+                .ifPresent(hallName -> seedMapInfluences(event, hallName));
+        });
+
+        migrateStallCoordinates();
+    }
+
+    private void migrateStallCoordinates() {
+        log.info(">>> Checking for stall templates needing coordinate migration...");
+        
+        java.util.Map<Long, List<StallTemplate>> missingByHall = stallTemplateRepository.findAll().stream()
+            .filter(t -> t.getPosX() == null || t.getPosY() == null)
+            .collect(Collectors.groupingBy(t -> t.getHall().getId()));
+
+        if (missingByHall.isEmpty()) {
+            log.info(">>> No stalls need coordinate migration.");
+            return;
+        }
+
+        missingByHall.forEach((hallId, stalls) -> {
+            log.info(">>> Migrating {} stalls for hall ID {} to grid layout...", stalls.size(), hallId);
+            for (int i = 0; i < stalls.size(); i++) {
+                StallTemplate t = stalls.get(i);
+                int row = i / 10; 
+                int col = i % 10;
+                
+                // Simple 10x10% grid placement
+                t.setPosX((double)(col * 10));
+                t.setPosY((double)(row * 10));
+                t.setWidth(9.0);
+                t.setHeight(9.0);
+                stallTemplateRepository.save(t);
+            }
+        });
+    }
+
+    private void seedPhysicalConstraints(Hall hall, List<PhysicalConstraint> constraints) {
+        if (constraints == null) return;
+        constraints.forEach(c -> {
+            c.setHall(hall);
+            physicalConstraintRepository.save(c);
+        });
+    }
+
+    private void seedMapInfluences(Event event, String hallName) {
+        if (mapInfluenceRepository.findByEvent_Id(event.getId()).isEmpty()) {
+            log.info(">>> Seeding Map Influences for event: {}", event.getName());
+            
+            // Influence 1: Main Entrance (High Traffic)
+            mapInfluenceRepository.save(MapInfluence.builder()
+                    .event(event)
+                    .hallName(hallName)
+                    .type(MapInfluenceType.TRAFFIC)
+                    .posX(45.0)
+                    .posY(5.0)
+                    .radius(25.0)
+                    .intensity(80)
+                    .falloff("LINEAR")
+                    .build());
+
+            // Influence 2: Food Court (Medium Traffic / Noise)
+            mapInfluenceRepository.save(MapInfluence.builder()
+                    .event(event)
+                    .hallName(hallName)
+                    .type(MapInfluenceType.TRAFFIC)
+                    .posX(90.0)
+                    .posY(50.0)
+                    .radius(20.0)
+                    .intensity(60)
+                    .falloff("LINEAR")
+                    .build());
+
+            // Influence 3: Information Desk (Service Facility)
+            mapInfluenceRepository.save(MapInfluence.builder()
+                    .event(event)
+                    .hallName(hallName)
+                    .type(MapInfluenceType.FACILITY)
+                    .posX(10.0)
+                    .posY(10.0)
+                    .radius(15.0)
+                    .intensity(50)
+                    .falloff("LINEAR")
+                    .build());
+        }
     }
 
 }

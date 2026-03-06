@@ -1,5 +1,5 @@
 import { memo, useState } from 'react'
-import type { Stall } from '../types'
+import { EventStall as Stall } from '@/shared/types/api'
 import StallActionButtons from './StallActionButtons'
 import StallDetailsOverlay from './StallDetailsOverlay'
 
@@ -16,12 +16,12 @@ function StallItem({ stall, isSelected, onToggle }: StallItemProps) {
     // Determine Grid Spans based on Size OR direct DB cols/rows
     const getSizeClasses = () => {
         // Preferred: Use the explicit spans from the DB
-        if (stall.colSpan && stall.rowSpan) {
+        if ((stall as any).colSpan && (stall as any).rowSpan) {
             const colMap: { [key: number]: string } = { 1: 'col-span-1', 2: 'col-span-2', 4: 'col-span-4' };
             const rowMap: { [key: number]: string } = { 1: 'row-span-1', 2: 'row-span-2' };
 
-            const colClass = colMap[stall.colSpan] || `col-span-${stall.colSpan}`;
-            const rowClass = rowMap[stall.rowSpan] || `row-span-${stall.rowSpan}`;
+            const colClass = colMap[(stall as any).colSpan] || `col-span-${(stall as any).colSpan}`;
+            const rowClass = rowMap[(stall as any).rowSpan] || `row-span-${(stall as any).rowSpan}`;
 
             return `${colClass} ${rowClass}`;
         }

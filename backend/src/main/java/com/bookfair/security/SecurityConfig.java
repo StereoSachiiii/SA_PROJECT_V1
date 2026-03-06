@@ -39,6 +39,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final RateLimitingFilter rateLimitingFilter;
 
+
     /**
      * Configures the authentication provider that verifies login credentials.
      *
@@ -93,7 +94,7 @@ public class SecurityConfig {
      * Builds the security filter chain — the core of the entire security setup.
      *
      * Configures:
-     * - CORS: enabled (uses CorsConfig bean)
+     * - CORS: disabled (same-origin via Nginx reverse proxy)
      * - CSRF: disabled (REST API uses JWT, not cookies)
      * - Sessions: stateless (every request must carry its own JWT)
      * - URL rules: which endpoints are public vs require authentication
@@ -109,7 +110,7 @@ public class SecurityConfig {
     // will be after jwtauth tags a user with either a role or anonymous
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.cors(cors -> {})
+        http.cors(AbstractHttpConfigurer::disable)
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> 
@@ -117,6 +118,7 @@ public class SecurityConfig {
                     .requestMatchers("/api/v1/auth/**").permitAll()
                     .requestMatchers("/api/v1/public/**").permitAll()
                     .requestMatchers("/uploads/**").permitAll()
+                    .requestMatchers("/ws/**").permitAll() // Allow WebSocket connections
                     .requestMatchers("/error").permitAll() // Allow Spring's internal error forwarding
                     
                     // System endpoints
@@ -130,7 +132,8 @@ public class SecurityConfig {
                     
                     // Authenticated users (Vendors/Employees/Admins)
                     .requestMatchers("/api/v1/vendor/**").authenticated()
-                    .requestMatchers("/api/v1/notifications/**", "/api/v1/notifications").authenticated()
+                    .requestMatchers("/api/v1/notifications", "/api/v1/notifications/**").authenticated()
+                    .requestMatchers("/api/v1/payments/**").authenticated()
                     
                     .anyRequest().authenticated()
             );

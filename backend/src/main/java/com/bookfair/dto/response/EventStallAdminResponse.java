@@ -11,6 +11,9 @@ public class EventStallAdminResponse {
     private String status;
     private Long baseRateCents;
     private Long finalPriceCents;
-    private String geometry;
+    private Double posX;
+    private Double posY;
+    private Double width;
+    private Double height;
     private String pricingVersion;
 }

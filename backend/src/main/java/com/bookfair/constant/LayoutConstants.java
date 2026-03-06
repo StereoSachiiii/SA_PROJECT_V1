@@ -1,44 +1,36 @@
 package com.bookfair.constant;
 
+import com.bookfair.entity.PhysicalConstraint;
+import com.bookfair.entity.PhysicalConstraintType;
+import java.util.List;
+import java.util.Arrays;
+
 public class LayoutConstants {
-    public static final String SIRIMAVO_LAYOUT = "{" +
-                "\"width\": 1000, \"height\": 600," +
-                "\"entrances\": [" +
-                "  {\"id\": \"gate-n\", \"type\": \"MAIN\", \"x\": 500, \"y\": 50, \"w\": 100, \"label\": \"MAIN NORTH GATE\"}," +
-                "  {\"id\": \"gate-s\", \"type\": \"SECONDARY\", \"x\": 500, \"y\": 580, \"w\": 80, \"label\": \"SOUTH SERVICE ENTRY\"}" +
-                "]," +
-                "\"influences\": [" +
-                "  {\"id\": \"inf-gate-n\", \"type\": \"ENTRANCE\", \"x\": 500, \"y\": 50, \"radius\": 250, \"intensity\": 85, \"falloff\": \"LINEAR\"}," +
-                "  {\"id\": \"inf-stage\", \"type\": \"STAGE\", \"x\": 850, \"y\": 300, \"radius\": 350, \"intensity\": 100, \"falloff\": \"EXPONENTIAL\"}," +
-                "  {\"id\": \"inf-aisle-c\", \"type\": \"WALKWAY\", \"x\": 500, \"y\": 300, \"radius\": 400, \"intensity\": 40, \"falloff\": \"LINEAR\"}" +
-                "]," +
-                "\"zones\": [" +
-                "  {\"type\": \"WALKWAY\", \"geometry\": {\"x\": 45, \"y\": 0, \"w\": 10, \"h\": 100}, \"metadata\": {\"label\": \"MAIN TRAFFIC AXIS\"}}," +
-                "  {\"type\": \"STAGE\", \"geometry\": {\"x\": 80, \"y\": 20, \"w\": 15, \"h\": 60}, \"metadata\": {\"label\": \"FESTIVAL STAGE\"}}," +
-                "  {\"type\": \"ENTRANCE\", \"geometry\": {\"x\": 45, \"y\": -5, \"w\": 10, \"h\": 8}, \"metadata\": {\"label\": \"MAIN ENTRY\"}}" +
-                "]" +
-                "}";
+    
+    public static final List<PhysicalConstraint> SIRIMAVO_CONSTRAINTS = Arrays.asList(
+        buildConstraint(PhysicalConstraintType.ENTRANCE, 45.0, 0.0, 10.0, 8.0, "MAIN ENTRY"),
+        buildConstraint(PhysicalConstraintType.WALL, 0.0, 0.0, 1.0, 100.0, "West Wall"),
+        buildConstraint(PhysicalConstraintType.WALL, 99.0, 0.0, 1.0, 100.0, "East Wall"),
+        buildConstraint(PhysicalConstraintType.PILLAR, 20.0, 20.0, 2.0, 2.0, "P1"),
+        buildConstraint(PhysicalConstraintType.PILLAR, 20.0, 50.0, 2.0, 2.0, "P2"),
+        buildConstraint(PhysicalConstraintType.PILLAR, 20.0, 80.0, 2.0, 2.0, "P3")
+    );
 
-    public static final String MAIN_HALL_LAYOUT = "{" +
-                "\"width\": 1000, \"height\": 800," +
-                "\"entrances\": [" +
-                "  {\"id\": \"mh-gate-main\", \"type\": \"MAIN\", \"x\": 450, \"y\": 20, \"w\": 120, \"label\": \"GRAND ENTRANCE\"}" +
-                "]," +
-                "\"influences\": [" +
-                "  {\"id\": \"mh-inf-gate\", \"type\": \"ENTRANCE\", \"x\": 450, \"y\": 20, \"radius\": 300, \"intensity\": 90, \"falloff\": \"LINEAR\"}," +
-                "  {\"id\": \"mh-inf-center\", \"type\": \"WALKWAY\", \"x\": 500, \"y\": 400, \"radius\": 500, \"intensity\": 50, \"falloff\": \"LINEAR\"}" +
-                "]," +
-                "\"zones\": [" +
-                "  {\"type\": \"ENTRANCE\", \"geometry\": {\"x\": 42, \"y\": -2, \"w\": 16, \"h\": 6}, \"metadata\": {\"label\": \"ENTRY HALL\"}}," +
-                "  {\"type\": \"WALKWAY\", \"geometry\": {\"x\": 0, \"y\": 45, \"w\": 100, \"h\": 10}, \"metadata\": {\"label\": \"CENTRAL PROMENADE\"}}" +
-                "]" +
-                "}";
+    public static final List<PhysicalConstraint> SLECC_CONSTRAINTS = Arrays.asList(
+        buildConstraint(PhysicalConstraintType.ENTRANCE, 0.0, 45.0, 3.0, 10.0, "MAIN ENTRY"),
+        buildConstraint(PhysicalConstraintType.FIRE_EXIT, 98.0, 10.0, 2.0, 5.0, "EXIT A"),
+        buildConstraint(PhysicalConstraintType.FIRE_EXIT, 98.0, 85.0, 2.0, 5.0, "EXIT B"),
+        buildConstraint(PhysicalConstraintType.OFFICE, 5.0, 5.0, 15.0, 10.0, "RECEPTION")
+    );
 
-    public static final String SLECC_MAIN_LAYOUT = "[" +
-                "{\"type\": \"ENTRANCE\", \"geometry\": {\"x\": 0, \"y\": 45, \"w\": 3, \"h\": 10}, \"metadata\": {\"label\": \"MAIN ENTRY\"}}," +
-                "{\"type\": \"STAGE\", \"geometry\": {\"x\": 85, \"y\": 30, \"w\": 15, \"h\": 40}, \"metadata\": {\"label\": \"MAIN STAGE\"}}," +
-                "{\"type\": \"WALKWAY\", \"geometry\": {\"x\": 15, \"y\": 0, \"w\": 5, \"h\": 100}, \"metadata\": {\"label\": \"Aisle A\"}}," +
-                "{\"type\": \"WALKWAY\", \"geometry\": {\"x\": 75, \"y\": 0, \"w\": 5, \"h\": 100}, \"metadata\": {\"label\": \"Aisle B\"}}," +
-                "{\"type\": \"REGISTRATION\", \"geometry\": {\"x\": 5, \"y\": 5, \"w\": 15, \"h\": 10}, \"metadata\": {\"label\": \"Reception\"}}" +
-            "]";
+    private static PhysicalConstraint buildConstraint(PhysicalConstraintType type, Double x, Double y, Double w, Double h, String label) {
+        return PhysicalConstraint.builder()
+            .type(type)
+            .posX(x)
+            .posY(y)
+            .width(w)
+            .height(h)
+            .label(label)
+            .build();
+    }
 }

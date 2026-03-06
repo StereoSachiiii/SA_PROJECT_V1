@@ -19,6 +19,9 @@ public class StallTemplateResponse {
     private Double sqFt;
     private Boolean isAvailable;
     private Integer defaultProximityScore;
-    private String geometry;
+    private Double posX;
+    private Double posY;
+    private Double width;
+    private Double height;
     private String imageUrl;
 }

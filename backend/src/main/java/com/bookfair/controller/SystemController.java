@@ -15,21 +15,21 @@ import java.util.Map;
 public class SystemController {
 
     @GetMapping("/health")
-    public ResponseEntity<Map<String, Object>> getHealth() {
+    public ResponseEntity<com.bookfair.dto.response.HealthResponse> getHealth() {
         long uptimeMillis = ManagementFactory.getRuntimeMXBean().getUptime();
         Runtime runtime = Runtime.getRuntime();
         int activeThreads = ManagementFactory.getThreadMXBean().getThreadCount();
         
-        return ResponseEntity.ok(Map.of(
-            "database", "UP",
-            "paymentGateway", "UP",
-            "mailService", "UP",
-            "uptimeSeconds", uptimeMillis / 1000,
-            "usedMemoryBytes", runtime.totalMemory() - runtime.freeMemory(),
-            "totalMemoryBytes", runtime.totalMemory(),
-            "maxMemoryBytes", runtime.maxMemory(),
-            "activeThreads", activeThreads,
-            "latencyMs", 15 // Placeholder for real latency if needed
-        ));
+        return ResponseEntity.ok(com.bookfair.dto.response.HealthResponse.builder()
+            .database("UP")
+            .paymentGateway("UP")
+            .mailService("UP")
+            .uptimeSeconds(uptimeMillis / 1000)
+            .usedMemoryBytes(runtime.totalMemory() - runtime.freeMemory())
+            .totalMemoryBytes(runtime.totalMemory())
+            .maxMemoryBytes(runtime.maxMemory())
+            .activeThreads(activeThreads)
+            .latencyMs(15)
+            .build());
     }
 }

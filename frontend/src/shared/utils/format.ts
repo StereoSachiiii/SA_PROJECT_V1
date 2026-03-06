@@ -52,3 +52,16 @@ export const formatTimeOnly = (date: string | Date | undefined | null): string =
     const d = new Date(date);
     return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
+
+export const formatTimeLeft = (expiresAt: string | Date | undefined | null): string => {
+    if (!expiresAt) return '';
+    const now = Date.now();
+    const expire = new Date(expiresAt).getTime();
+    const diff = expire - now;
+
+    if (diff <= 0) return 'Expired';
+
+    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const secs = Math.floor((diff % (1000 * 60)) / 1000);
+    return `${mins}m ${secs}s`;
+};

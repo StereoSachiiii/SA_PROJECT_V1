@@ -7,6 +7,9 @@ public class EventStallUpdateRequest {
     private Long id; // EventStall ID
     private String name; // Template Name
     private String hallName; // Hall Name (to link to hall)
-    private String geometry; // Updated geometry JSON
+    private Double posX;
+    private Double posY;
+    private Double width;
+    private Double height;
     private Long finalPriceCents; // Optional override
 }

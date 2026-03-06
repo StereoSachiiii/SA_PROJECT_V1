@@ -1,6 +1,6 @@
 package com.bookfair.service;
 
-import com.bookfair.entity.Reservation;
+import com.bookfair.features.reservation.Reservation;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.util.ByteArrayDataSource;
 import lombok.RequiredArgsConstructor;
@@ -72,9 +72,33 @@ public class EmailService {
            mimeMessageHelper.addInline("qrCode", new ByteArrayDataSource(qrBytes, "image/png"));
 
            mailSender.send(mimeMessage);
-       } catch (Exception e) {
-           throw new RuntimeException("Failed to send email", e);
-       }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to send confirmation email", e);
+        }
+    }
+    
+    public void sendReminderEmail(Reservation reservation) {
+        if (reservation.getUser() == null || reservation.getUser().getEmail() == null) return;
+        
+        try {
+            Context context = new Context();
+            context.setVariable("reservation", reservation);
+            context.setVariable("user", reservation.getUser());
+            context.setVariable("event", reservation.getEventStall().getEvent());
+            
+            String html = templateEngine.process("res_reminder_email_template.html", context);
+            
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            
+            helper.setTo(reservation.getUser().getEmail());
+            helper.setSubject("Reminder: Upcoming Event - " + reservation.getEventStall().getEvent().getName());
+            helper.setText(html, true);
+            
+            mailSender.send(message);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to send reminder email", e);
+        }
     }
 
     /**

@@ -5,7 +5,8 @@ import {
     Undo2,
     FileSearch,
     Activity,
-    MapPin
+    MapPin,
+    FileText
 } from 'lucide-react';
 
 const navItems = [
@@ -13,6 +14,7 @@ const navItems = [
     { name: 'Hall Management', path: '/admin/halls', icon: MapPin },
     { name: 'Reservations', path: '/admin/reservations', icon: ClipboardList },
     { name: 'Refunds', path: '/admin/refunds', icon: Undo2 },
+    { name: 'Vendor Documents', path: '/admin/vendor-documents', icon: FileText },
     { name: 'Audit Logs', path: '/admin/audit-logs', icon: FileSearch },
     { name: 'System Health', path: '/admin/health', icon: Activity },
 ];

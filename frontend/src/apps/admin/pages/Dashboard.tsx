@@ -1,8 +1,5 @@
-import { useState, useEffect } from 'react';
 import { formatCurrency } from '@/shared/utils/format';
-import { adminApi } from '@/shared/api/adminApi';
-import { publicApi } from '@/shared/api/publicApi';
-import { PageEnvelope, Event, AdminDashboardStats, AuditLog, SystemHealth } from '@/shared/types/api';
+import { useAdminDashboard } from '../hooks/useAdminDashboard';
 import MetricsCard from '@/apps/admin/components/Dashboard/MetricsCard';
 import HealthPreview from '@/apps/admin/components/Dashboard/HealthPreview';
 import {
@@ -18,109 +15,19 @@ import { EventManagementTable } from '../components/Dashboard/EventManagementTab
 import { EventFormModal } from '../components/Dashboard/EventFormModal';
 
 export default function Dashboard() {
-    const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'EVENTS'>('OVERVIEW');
-    const [health, setHealth] = useState<SystemHealth | null>(null);
-    const [auditLogs, setAuditLogs] = useState<PageEnvelope<AuditLog> | null>(null);
-    const [events, setEvents] = useState<Event[]>([]);
-    const [stats, setStats] = useState<AdminDashboardStats | null>(null);
-    const [loading, setLoading] = useState(true);
-
-    // Event Management State
-    const [showCreateModal, setShowCreateModal] = useState(false);
-    const [showEditModal, setShowEditModal] = useState(false);
-    const [eventData, setEventData] = useState<Partial<Event>>({
-        name: '',
-        location: 'BMICH',
-        status: 'DRAFT',
-        startDate: new Date().toISOString().split('T')[0],
-        endDate: new Date().toISOString().split('T')[0]
-    });
-
-    useEffect(() => {
-        console.info('[Dashboard] Initializing data stream');
-        loadInitialData();
-    }, []);
-
-    const loadInitialData = async () => {
-        console.info('[Dashboard] Refreshing metrics, health, and logs');
-        setLoading(true);
-        try {
-            const [h, a, e, s] = await Promise.all([
-                adminApi.getHealth().catch(() => ({
-                    database: 'DOWN',
-                    paymentGateway: 'DOWN',
-                    mailService: 'DOWN',
-                    uptimeSeconds: 0,
-                    usedMemoryBytes: 0,
-                    totalMemoryBytes: 0,
-                    maxMemoryBytes: 0,
-                    activeThreads: 0,
-                    latencyMs: 0
-                } as SystemHealth)),
-                adminApi.getAuditLogs('RESERVATION', 0),
-                publicApi.getActiveEvents(),
-                adminApi.getDashboardStats().catch(() => null)
-            ]);
-            setHealth(h);
-            setAuditLogs(a);
-            setEvents(e.content);
-            setStats(s);
-        } catch (err) {
-            console.error("Dashboard Load Error:", err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleCreateEvent = async () => {
-        try {
-            await adminApi.createEvent(eventData);
-            setShowCreateModal(false);
-            setEventData({ name: '', location: 'BMICH', status: 'DRAFT' });
-            loadInitialData();
-        } catch (e: any) {
-            alert(e.message);
-        }
-    };
-
-    const handleDeleteEvent = async (id: number) => {
-        if (!confirm('Are you sure? This will delete the event and all stalls.')) return;
-        try {
-            await adminApi.deleteEvent(id);
-            loadInitialData();
-        } catch (e: any) {
-            alert(e.message);
-        }
-    };
-
-    const handleUpdateEventStatus = async (id: number, status: 'DRAFT' | 'OPEN' | 'CLOSED') => {
-        try {
-            await adminApi.updateEvent(id, { status });
-            loadInitialData();
-        } catch (e: any) {
-            alert(e.message);
-        }
-    };
-
-    const handleStartEdit = (event: Event) => {
-        setEventData({
-            ...event,
-            startDate: new Date(event.startDate).toISOString().split('T')[0],
-            endDate: new Date(event.endDate).toISOString().split('T')[0]
-        });
-        setShowEditModal(true);
-    };
-
-    const handleUpdateEvent = async () => {
-        if (!eventData.id) return;
-        try {
-            await adminApi.updateEvent(eventData.id, eventData);
-            setShowEditModal(false);
-            loadInitialData();
-        } catch (e: any) {
-            alert(e.message);
-        }
-    };
+    const {
+        activeTab, setActiveTab,
+        health, auditLogs, events, stats, loading,
+        showCreateModal, setShowCreateModal,
+        showEditModal, setShowEditModal,
+        eventData, setEventData,
+        loadInitialData,
+        handleCreateEvent,
+        handleDeleteEvent,
+        handleUpdateEventStatus,
+        handleStartEdit,
+        handleUpdateEvent
+    } = useAdminDashboard();
 
     if (loading && !health) {
         return (
@@ -215,7 +122,7 @@ export default function Dashboard() {
                         onEdit={handleStartEdit}
                         onDelete={handleDeleteEvent}
                         onCreateClick={() => {
-                            setEventData({ name: '', location: 'BMICH', status: 'DRAFT', startDate: new Date().toISOString().split('T')[0], endDate: new Date().toISOString().split('T')[0] });
+                            setEventData({ name: '', location: 'BMICH', status: 'UPCOMING', startDate: new Date().toISOString().split('T')[0], endDate: new Date().toISOString().split('T')[0] });
                             setShowCreateModal(true);
                         }}
                     />

@@ -28,9 +28,9 @@ public class AuditLog {
 
     private Long entityId;
 
-    /** Stores before/after values as JSON for detailed change tracking. */
+    /** Stores a human-readable description of the changes (avoiding JSON). */
     @Column(columnDefinition = "TEXT")
-    private String metadata;
+    private String changeDescription;
 
     @Column(nullable = false)
     private LocalDateTime timestamp;

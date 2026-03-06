@@ -22,6 +22,9 @@ import java.util.stream.Collectors;
 public class PublicController {
 
     private final VenueRepository venueRepository;
+    private final com.bookfair.repository.HallRepository hallRepository;
+    private final com.bookfair.repository.MapZoneRepository mapZoneRepository;
+    private final com.bookfair.repository.MapInfluenceRepository mapInfluenceRepository;
     private final EventService eventService;
     private final StallService stallService;
 
@@ -31,6 +34,13 @@ public class PublicController {
                 .map(this::mapToVenueResponse)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(new org.springframework.data.domain.PageImpl<>(content));
+    }
+
+    @GetMapping("/halls/genres")
+    public ResponseEntity<List<String>> getHallGenres() {
+        return ResponseEntity.ok(hallRepository.findDistinctMainCategories().stream()
+                .map(Enum::name)
+                .collect(Collectors.toList()));
     }
 
     @GetMapping("/events/active")
@@ -58,28 +68,12 @@ public class PublicController {
     }
 
     @GetMapping("/events/{id}/map")
-    public ResponseEntity<Object> getEventMap(@PathVariable Long id) {
+    public ResponseEntity<com.bookfair.dto.response.EventMapResponse> getEventMap(@PathVariable Long id) {
         // API.md 4.3 Format: { eventId, eventName, stalls: [...], layout: { ... } }
         com.bookfair.entity.Event event = eventService.getEventById(id);
         List<StallResponse> stalls = stallService.getByEventId(id);
         
-        Object layout = new java.util.HashMap<>();
-        if (!stalls.isEmpty()) {
-            var firstStallMatch = event.getStalls().stream().findFirst();
-            if (firstStallMatch.isPresent() && firstStallMatch.get().getStallTemplate() != null) {
-                com.bookfair.entity.Hall hall = firstStallMatch.get().getStallTemplate().getHall();
-                if (hall != null && hall.getStaticLayout() != null) {
-                    try {
-                        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-                        layout = mapper.readTree(hall.getStaticLayout());
-                    } catch (Exception e) {
-                        log.error("Mapping layout failed: {}", e.getMessage());
-                    }
-                }
-            }
-        }
-
-        // Aggregate Hall Metadata
+        // Aggregate Hall Metadata and Layout Constraints
         java.util.Map<Long, Map<String, Object>> hallMetadata = new java.util.HashMap<>();
         if (!stalls.isEmpty()) {
             event.getStalls().stream()
@@ -89,7 +83,7 @@ public class PublicController {
                 .forEach(hall -> {
                     Map<String, Object> meta = new java.util.HashMap<>();
                     meta.put("id", hall.getId());
-                    meta.put("name", hall.getName()); // Keep this as the key for frontend lookup if using name
+                    meta.put("name", hall.getName());
                     meta.put("hallName", hall.getName());
                     meta.put("capacity", hall.getCapacity());
                     meta.put("isAc", hall.getIsAirConditioned());
@@ -97,20 +91,63 @@ public class PublicController {
                     meta.put("floor", hall.getFloorLevel());
                     meta.put("sqFt", hall.getTotalSqFt());
                     meta.put("category", hall.getMainCategory());
-                    meta.put("mainCategory", hall.getMainCategory()); // sending both just in case
+                    
+                    // Add constraints for the hall
+                    List<com.bookfair.dto.response.PhysicalConstraintResponse> constraints = hall.getConstraints().stream()
+                            .map(c -> com.bookfair.dto.response.PhysicalConstraintResponse.builder()
+                                    .id(c.getId())
+                                    .type(c.getType())
+                                    .posX(c.getPosX())
+                                    .posY(c.getPosY())
+                                    .width(c.getWidth())
+                                    .height(c.getHeight())
+                                    .label(c.getLabel())
+                                    .build()).collect(Collectors.toList());
+                    meta.put("constraints", constraints);
+
                     hallMetadata.put(hall.getId(), meta);
                 });
         }
 
-        java.util.Map<String, Object> response = new java.util.HashMap<>();
-        response.put("eventId", id);
-        response.put("eventName", event.getName());
-        response.put("stalls", stalls);
-        response.put("layout", layout);
-        response.put("halls", hallMetadata.values()); // Return list of hall objects
-        response.put("zones", event.getLayoutConfig());
-        
-        return ResponseEntity.ok(response);
+        List<com.bookfair.dto.response.MapZoneResponse> zoneDTOs = mapZoneRepository.findByEvent_Id(id).stream()
+                .map(z -> com.bookfair.dto.response.MapZoneResponse.builder()
+                        .id(z.getId())
+                        .hallName(z.getHallName())
+                        .type(z.getType().name())
+                        .posX(z.getPosX())
+                        .posY(z.getPosY())
+                        .width(z.getWidth())
+                        .height(z.getHeight())
+                        .label(z.getLabel())
+                        .build())
+                .collect(Collectors.toList());
+
+        List<com.bookfair.dto.response.MapInfluenceResponse> influenceDTOs = mapInfluenceRepository.findByEvent_Id(id).stream()
+                .map(i -> com.bookfair.dto.response.MapInfluenceResponse.builder()
+                        .id(i.getId().toString())
+                        .hallName(i.getHallName())
+                        .type(i.getType().name())
+                        .posX(i.getPosX())
+                        .posY(i.getPosY())
+                        .radius(i.getRadius())
+                        .intensity(i.getIntensity())
+                        .falloff(i.getFalloff())
+                        .build())
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok()
+                .cacheControl(org.springframework.http.CacheControl.maxAge(5, java.util.concurrent.TimeUnit.MINUTES))
+                .body(com.bookfair.dto.response.EventMapResponse.builder()
+                .eventId(id)
+                .eventName(event.getName())
+                .stalls(stalls)
+                .mapUrl(event.getMapUrl())
+                .mapWidth(event.getMapWidth())
+                .mapHeight(event.getMapHeight())
+                .halls(new java.util.ArrayList<>(hallMetadata.values()))
+                .zones(zoneDTOs)
+                .influences(influenceDTOs)
+                .build());
     }
 
     private VenueResponse mapToVenueResponse(Venue venue) {
@@ -122,7 +159,7 @@ public class PublicController {
                     VenueResponse.BuildingResponse.builder()
                         .id(b.getId())
                         .name(b.getName())
-                        .gps(b.getGpsCoordinates())
+                        .gps(b.getGpsLocation())
                         .halls(b.getHalls().stream().map(h -> 
                             VenueResponse.HallResponse.builder()
                                 .id(h.getId())
@@ -144,9 +181,10 @@ public class PublicController {
                 .endDate(event.getEndDate())
                 .location(event.getLocation())
                 .venueId(event.getVenue() != null ? event.getVenue().getId() : null)
-                .venueName(event.getVenue() != null ? event.getVenue().getName() : null)
                 .status(event.getStatus().name())
-                .layoutConfig(event.getLayoutConfig())
+                .mapUrl(event.getMapUrl())
+                .mapWidth(event.getMapWidth())
+                .mapHeight(event.getMapHeight())
                 .imageUrl(event.getImageUrl())
                 .createdAt(event.getCreatedAt())
                 .build();

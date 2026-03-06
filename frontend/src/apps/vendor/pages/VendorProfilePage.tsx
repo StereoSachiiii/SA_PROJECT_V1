@@ -1,46 +1,25 @@
-import { useState } from 'react';
-import { useAuth } from '@/shared/context/AuthContext';
-import { vendorApi } from '@/shared/api/vendorApi';
+import { useNavigate } from 'react-router-dom';
+import { useVendorProfile } from '../hooks/useVendorProfile';
 
 export default function VendorProfilePage() {
-    const { user, login } = useAuth();
-    const [loading, setLoading] = useState(false);
-    const [success, setSuccess] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const navigate = useNavigate();
+    const {
+        formData,
+        setFormData,
+        isLoading,
+        isUpdating,
+        success,
+        error,
+        handleSubmit
+    } = useVendorProfile();
 
-    const [formData, setFormData] = useState({
-        businessName: user?.businessName || '',
-        businessDescription: user?.businessDescription || '',
-        contactNumber: user?.contactNumber || '',
-        address: user?.address || '',
-        logoUrl: user?.logoUrl || ''
-    });
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        setError(null);
-        setSuccess(false);
-
-        try {
-            // we preserve the user's existing categories if they have them, just removing them from the edit form
-            const payload = {
-                ...formData,
-                categories: user?.categories || []
-            };
-            const updatedUser = await vendorApi.updateProfile(payload);
-            const token = localStorage.getItem('token');
-            if (token) {
-                login(token, updatedUser);
-            }
-            setSuccess(true);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        } catch (err: any) {
-            setError(err.message || 'Failed to update profile');
-        } finally {
-            setLoading(false);
-        }
-    };
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-900"></div>
+            </div>
+        );
+    }
 
     return (
         <div className="container mx-auto px-6 py-12 max-w-4xl">
@@ -122,17 +101,17 @@ export default function VendorProfilePage() {
                 <div className="flex justify-end gap-4 pt-6">
                     <button
                         type="button"
-                        onClick={() => window.location.href = '/vendor/dashboard'}
+                        onClick={() => navigate('/vendor/dashboard')}
                         className="px-8 py-4 text-slate-400 font-black text-sm uppercase tracking-widest hover:text-slate-600 transition-colors"
                     >
                         Back to Dashboard
                     </button>
                     <button
                         type="submit"
-                        disabled={loading}
+                        disabled={isUpdating}
                         className="px-10 py-4 bg-slate-900 text-white font-black text-sm uppercase tracking-widest rounded-2xl hover:bg-black hover:scale-105 active:scale-95 transition-all shadow-xl shadow-slate-200 disabled:opacity-50"
                     >
-                        {loading ? 'Saving...' : 'Save Profile'}
+                        {isUpdating ? 'Saving...' : 'Save Profile'}
                     </button>
                 </div>
             </form>

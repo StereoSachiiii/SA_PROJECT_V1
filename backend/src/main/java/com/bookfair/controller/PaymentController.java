@@ -15,17 +15,22 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @PostMapping("/create-payment-intent/{reservationId}")
-    public ResponseEntity<Map<String, String>> createPaymentIntent(@PathVariable Long reservationId) {
+    public ResponseEntity<com.bookfair.dto.response.PaymentIntentResponse> createPaymentIntent(@PathVariable Long reservationId) {
         String clientSecret = paymentService.createPaymentIntent(reservationId);
-        return ResponseEntity.ok(Map.of("clientSecret", clientSecret));
+        return ResponseEntity.ok(com.bookfair.dto.response.PaymentIntentResponse.builder()
+                .clientSecret(clientSecret)
+                .build());
     }
 
     @PostMapping("/confirm/{reservationId}")
-    public ResponseEntity<Map<String, Object>> confirmPayment(
+    public ResponseEntity<com.bookfair.dto.response.PaymentConfirmationResponse> confirmPayment(
             @PathVariable Long reservationId,
             @RequestBody Map<String, String> body) {
         String paymentIntentId = body.get("paymentIntentId");
         paymentService.confirmPayment(reservationId, paymentIntentId);
-        return ResponseEntity.ok(Map.of("success", true, "reservationId", reservationId));
+        return ResponseEntity.ok(com.bookfair.dto.response.PaymentConfirmationResponse.builder()
+                .success(true)
+                .reservationId(reservationId)
+                .build());
     }
 }

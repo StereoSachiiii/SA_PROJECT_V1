@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 public class EventService {
 
     private final EventRepository eventRepository;
+    private final com.bookfair.repository.EventStallRepository eventStallRepository;
 
     public List<Event> getAllEvents() {
         return eventRepository.findAll();
@@ -48,12 +49,16 @@ public class EventService {
         event.setStartDate(request.getStartDate());
         event.setEndDate(request.getEndDate());
         event.setLocation(request.getLocation());
-        if (request.getStatus() != null) {
-            event.setStatus(request.getStatus());
+        if (request.getStatus() != null && !request.getStatus().isBlank()) {
+            try {
+                event.setStatus(Event.EventStatus.valueOf(request.getStatus().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                // Unknown status string (e.g. DRAFT) — keep current status
+            }
         }
-        if (request.getLayoutConfig() != null) {
-            event.setLayoutConfig(request.getLayoutConfig());
-        }
+        if (request.getMapUrl() != null) event.setMapUrl(request.getMapUrl());
+        if (request.getMapWidth() != null) event.setMapWidth(request.getMapWidth());
+        if (request.getMapHeight() != null) event.setMapHeight(request.getMapHeight());
         return eventRepository.save(event);
     }
 
@@ -90,5 +95,32 @@ public class EventService {
             throw new ResourceNotFoundException("Event not found with id: " + id);
         }
         eventRepository.deleteById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public List<com.bookfair.entity.EventStall> getEventStalls(Long eventId) {
+        return eventStallRepository.findByEvent_Id(eventId);
+    }
+
+    @Transactional(readOnly = true)
+    public com.bookfair.dto.response.EventStatsResponse getEventStats(Long eventId) {
+        List<com.bookfair.entity.EventStall> stalls = eventStallRepository.findByEvent_Id(eventId);
+        long total    = stalls.size();
+        long reserved = stalls.stream().filter(s -> s.getStatus() == com.bookfair.entity.EventStallStatus.RESERVED).count();
+        long available = stalls.stream().filter(s -> s.getStatus() == com.bookfair.entity.EventStallStatus.AVAILABLE).count();
+        long blocked  = stalls.stream().filter(s -> s.getStatus() == com.bookfair.entity.EventStallStatus.BLOCKED).count();
+        long revenueReserved = stalls.stream()
+                .filter(s -> s.getStatus() == com.bookfair.entity.EventStallStatus.RESERVED)
+                .mapToLong(s -> s.getFinalPriceCents() != null ? s.getFinalPriceCents() : 0).sum();
+
+        return com.bookfair.dto.response.EventStatsResponse.builder()
+            .eventId(eventId)
+            .totalStalls(total)
+            .reservedStalls(reserved)
+            .availableStalls(available)
+            .blockedStalls(blocked)
+            .fillRate(total > 0 ? (double) reserved / total * 100.0 : 0.0)
+            .projectedRevenueCents(revenueReserved)
+            .build();
     }
 }

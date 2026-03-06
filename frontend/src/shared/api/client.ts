@@ -48,8 +48,8 @@ api.interceptors.response.use(
 
 
 
-        // Auto-logout on 401
-        if (status === 401) {
+        // Auto-logout on 401 Unauthorized or 403 Forbidden (stale token)
+        if (status === 401 || status === 403) {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
 
@@ -57,7 +57,7 @@ api.interceptors.response.use(
             if (!error.config?.url?.includes('/auth/login')) {
                 const isAdmin = window.location.pathname.startsWith('/admin');
                 window.location.href = isAdmin ? '/admin/login' : '/login';
-                return Promise.reject(new Error("Session expired. Please login again."));
+                return Promise.reject(new Error("Session expired or access denied. Please login again."));
             }
         }
 
@@ -79,6 +79,11 @@ api.interceptors.response.use(
             };
 
             let friendlyMessage = errorMap[apiError.code] || apiError.message;
+
+            // Preserve backend duplicate user/email conflict messages
+            if (apiError.code === 'RESOURCE_CONFLICT' && apiError.message && (apiError.message.includes('Username') || apiError.message.includes('Email'))) {
+                friendlyMessage = apiError.message;
+            }
 
             // Append details if useful (e.g. which stall caused the conflict)
             if (apiError.code === 'TAXONOMY_DENIED' && apiError.details?.allowed) {

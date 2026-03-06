@@ -1,27 +1,8 @@
-export interface User {
-    id: number
-    username: string
-    email: string
-    businessName: string
-    contactNumber: string
-    role: 'ADMIN' | 'VENDOR'
-}
+import { User, AuthResponse, UserRequest as ApiUserRequest } from './api';
 
-export interface AuthResponse {
-    token: string
-    id: number
-    username: string
-    email: string
-    businessName: string
-    roles: string[]
-}
+export type { User, AuthResponse };
 
-export interface UserRequest {
-    username: string
-    password?: string
-    email: string
-    businessName: string
-    contactNumber: string
-    address?: string
-    role?: 'ADMIN' | 'VENDOR'
+export interface UserRequest extends ApiUserRequest {
+    contactNumber: string;
+    address?: string;
 }

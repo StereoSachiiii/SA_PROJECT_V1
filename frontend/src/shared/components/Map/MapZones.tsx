@@ -49,6 +49,52 @@ export default function MapZones({ zones }: MapZonesProps) {
                         </div>
                     )}
 
+                    {zone.type === 'FIRE_EXIT' && (
+                        <div className="w-full h-full flex flex-col items-center justify-end pb-2"
+                            style={{
+                                background: 'rgba(239,68,68,0.15)',
+                                border: '3px solid rgba(239,68,68,0.7)',
+                                borderTop: '3px solid rgba(239,68,68,0.7)', // Ensure visible border
+                            }}
+                        >
+                            <span className="text-lg leading-none">🚪</span>
+                            <span className="text-[8px] font-bold uppercase tracking-widest text-red-600 mt-1 select-none">
+                                {zone.label}
+                            </span>
+                        </div>
+                    )}
+
+                    {zone.type === 'WALL' && (
+                        <div className="w-full h-full"
+                            style={{
+                                background: 'rgba(75,85,99,0.4)',
+                                border: '1px solid rgba(75,85,99,0.8)',
+                            }}
+                        />
+                    )}
+
+                    {zone.type === 'PILLAR' && (
+                        <div className="w-full h-full rounded-sm"
+                            style={{
+                                background: 'rgba(31,41,55,0.7)',
+                                border: '2px solid rgba(17,24,39,0.9)',
+                            }}
+                        />
+                    )}
+
+                    {zone.type === 'OFFICE' && (
+                        <div className="w-full h-full flex flex-col items-center justify-center rounded border-2"
+                            style={{
+                                background: 'rgba(107,114,128,0.1)',
+                                borderColor: 'rgba(107,114,128,0.4)',
+                            }}
+                        >
+                            <span className="text-[10px] font-bold uppercase tracking-tighter text-gray-600 select-none">
+                                {zone.label}
+                            </span>
+                        </div>
+                    )}
+
                     {zone.type === 'STAGE' && (
                         <div className="w-full h-full flex flex-col items-center justify-center gap-2 rounded"
                             style={{

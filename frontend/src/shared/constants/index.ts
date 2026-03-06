@@ -38,12 +38,12 @@ export const RESERVATION_STATUSES = [
 ] as const;
 
 export const EVENT_STATUSES = [
-    'DRAFT',
     'UPCOMING',
     'OPEN',
     'CLOSED',
     'COMPLETED',
-    'CANCELLED'
+    'CANCELLED',
+    'ARCHIVED'
 ] as const;
 
 export const NOISE_LEVELS = ['LOW', 'MODERATE', 'HIGH', 'VERY_HIGH'];

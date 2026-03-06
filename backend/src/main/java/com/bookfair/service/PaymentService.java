@@ -1,8 +1,9 @@
 package com.bookfair.service;
 
-import com.bookfair.entity.Reservation;
+import com.bookfair.features.reservation.Reservation;
+import com.bookfair.features.reservation.ReservationRepository;
+import com.bookfair.features.reservation.ReservationService;
 import com.bookfair.exception.ResourceNotFoundException;
-import com.bookfair.repository.ReservationRepository;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;

@@ -1,3 +1,6 @@
+import { EventStall as MapStall, PricingBreakdown, Hall, ValueDriver, MapZone, MapInfluence } from './api'
+
+export type { MapStall, PricingBreakdown, ValueDriver };
 
 export interface StallGeometry {
     x: number
@@ -6,74 +9,17 @@ export interface StallGeometry {
     h: number
 }
 
-export interface ValueDriver {
-    label: string
-    value: string
-}
-
-export interface PricingBreakdown {
-    'Visibility Score'?: string | number
-    'Value Drivers'?: ValueDriver[]
-    'Base Rate'?: number
-}
-
-export interface MapStall {
-    id: number
-    templateName: string
-    hallName?: string
-    priceCents: number
-    reserved: boolean
-    type?: string
-    size?: string
-    category?: string
-    geometry: StallGeometry | string
-    pricingBreakdown?: PricingBreakdown
-    occupiedBy?: string | null
-}
-
-/**
- * Raw shape of eventMap.zones — this field is a JSON STRING on the root object,
- * NOT a nested object. Must be JSON.parse()'d before use.
- *
- * Coordinate systems inside:
- *   influences → pixel coords against (width × height) canvas
- *   zones.geometry → percentage coords (0–100)
- */
-export interface RawZonesJson {
-    width: number   // canvas pixel width (e.g. 1000)
-    height: number  // canvas pixel height (e.g. 600)
-    entrances: Array<{
-        id: string
-        type: string
-        x: number     // pixel
-        y: number     // pixel
-        w: number     // pixel
-        label: string
-    }>
-    influences: Array<{
-        hallName?: string // Optional for backward compatibility
-        id: string
-        type: string
-        x: number     // PIXEL — divide by width for percentage
-        y: number     // PIXEL — divide by height for percentage
-        radius: number // PIXEL — divide by width for percentage
-        intensity: number // 0–100
-        falloff: string
-    }>
-    zones: Array<{
-        hallName?: string // Optional for backward compatibility
-        type: 'WALKWAY' | 'STAGE' | 'ENTRANCE'
-        geometry: { x: number; y: number; w: number; h: number }  // PERCENTAGE
-        metadata?: { label?: string }
-    }>
-}
-
 /** What the API actually returns */
 export interface RawEventMap {
     eventId: number
     eventName: string
     stalls: MapStall[]
-    zones: string  // JSON string — NOT a nested object
+    zones: MapZone[]
+    influences: MapInfluence[]
+    halls?: Hall[]
+    mapUrl?: string
+    mapWidth?: number
+    mapHeight?: number
 }
 
 // ─── Normalized Internal Types ────────────────────────────────────────────────
@@ -93,7 +39,7 @@ export interface NormalizedInfluence {
 /** Layout zone with percentage coordinates */
 export interface NormalizedZone {
     hallName?: string
-    type: 'WALKWAY' | 'STAGE' | 'ENTRANCE'
+    type: 'WALKWAY' | 'STAGE' | 'ENTRANCE' | 'FIRE_EXIT' | 'WALL' | 'PILLAR' | 'OFFICE' | 'OTHER'
     x: number
     y: number
     w: number
@@ -125,55 +71,58 @@ export function getStallRenderState(
 
 /**
  * Parse a stall's geometry field.
- * Handles both pre-parsed objects and JSON strings.
+ * Handles posX/posY style and provides defaults.
  */
-export function parseGeometry(raw: StallGeometry | string | null | undefined): StallGeometry {
-    if (!raw) return { x: 0, y: 0, w: 8, h: 8 }
-    if (typeof raw === 'string') {
-        try { return JSON.parse(raw) }
-        catch { return { x: 0, y: 0, w: 8, h: 8 } }
+export function parseGeometry(stall: MapStall): StallGeometry {
+    return {
+        x: stall.posX ?? 0,
+        y: stall.posY ?? 0,
+        w: stall.width || 8,
+        h: stall.height || 8
     }
-    return raw
 }
 
 /**
- * Parse eventMap.zones JSON string → normalized percentage-based shapes.
- *
- * CRITICAL COORDINATE NORMALIZATION:
- * - Influence x/y/radius are in PIXEL space (against width×height canvas)
- * - They must be divided by canvas dimensions to produce percentages
- * - Zone geometries are already percentage-based (just need .geometry unwrapping)
+ * Normalize zones and influences from lists into internal types.
  */
-export function parseZones(zonesStr: string | null | undefined): ParsedZones {
-    if (!zonesStr) return { influences: [], zones: [] }
-
-    let raw: RawZonesJson
-    try { raw = JSON.parse(zonesStr) }
-    catch { return { influences: [], zones: [] } }
-
-    const W = raw.width || 1000
-    const H = raw.height || 600
-
-    const influences: NormalizedInfluence[] = (raw.influences ?? []).map(inf => ({
+export function normalizeMapData(rawZones: MapZone[], rawInfluences: MapInfluence[], halls: any[] = []): ParsedZones {
+    const influences: NormalizedInfluence[] = (rawInfluences ?? []).map(inf => ({
         hallName: inf.hallName,
-        id: inf.id,
+        id: inf.id.toString(),
         type: inf.type,
-        cx: (inf.x / W) * 100,
-        cy: (inf.y / H) * 100,
-        r: (inf.radius / W) * 100,
+        cx: inf.posX,
+        cy: inf.posY,
+        r: inf.radius,
         intensity: inf.intensity,
         falloff: inf.falloff,
     }))
 
-    const zones: NormalizedZone[] = (raw.zones ?? []).map(z => ({
+    const zones: NormalizedZone[] = (rawZones ?? []).map(z => ({
         hallName: z.hallName,
-        type: z.type,
-        x: z.geometry.x,
-        y: z.geometry.y,
-        w: z.geometry.w,
-        h: z.geometry.h,
-        label: z.metadata?.label ?? z.type,
+        type: z.type as any,
+        x: z.posX,
+        y: z.posY,
+        w: z.width,
+        h: z.height,
+        label: z.label ?? z.type,
     }))
+
+    // Add structural constraints from halls
+    halls.forEach(hall => {
+        if (hall.constraints) {
+            hall.constraints.forEach((c: any) => {
+                zones.push({
+                    hallName: hall.name,
+                    type: c.type as any,
+                    x: c.posX,
+                    y: c.posY,
+                    w: c.width,
+                    h: c.height,
+                    label: c.label ?? c.type,
+                });
+            });
+        }
+    });
 
     return { influences, zones }
 }
@@ -197,7 +146,7 @@ export function parseScore(raw: string | number | undefined | null): number {
 export function detectImplicitAisles(stalls: MapStall[], columnWidth = 10): number[] {
     const occupiedX = new Set(
         stalls
-            .map(s => parseGeometry(s.geometry).x)
+            .map(s => parseGeometry(s).x)
             .filter(x => x % columnWidth === 0)
     )
 
@@ -217,7 +166,7 @@ export function formatPrice(priceCents: number): string {
 }
 
 /**
- * Score → color token for visual rendering.
+ * Score → color color token for visual rendering.
  */
 export function scoreToColor(score: number): {
     bar: string

@@ -1,8 +1,7 @@
-import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { reservationApi } from '@/shared/api/reservationApi';
-import { vendorApi } from '@/shared/api/vendorApi';
+import { useEffect } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useVendorReservationDetail } from '../hooks/useVendorReservationDetail';
+import { paymentApi } from '@/shared/api/paymentApi';
 
 // Sub-components
 import { ReservationHeader } from '../components/VendorReservationDetail/ReservationHeader';
@@ -28,58 +27,34 @@ export const VendorReservationDetailPage = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const reservationId = Number(id);
-    const [showQrFullscreen, setShowQrFullscreen] = useState(false);
-    const [showCancelConfirm, setShowCancelConfirm] = useState(false);
-    const [showEditInfo, setShowEditInfo] = useState(false);
-    const [isDownloading, setIsDownloading] = useState(false);
-    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-    const queryClient = useQueryClient();
 
-    const { data: reservation, isLoading, error } = useQuery({
-        queryKey: ['reservation', reservationId],
-        queryFn: () => reservationApi.getById(reservationId),
-        enabled: !!reservationId,
-    });
+    const {
+        reservation, isLoading, error,
+        showQrFullscreen, setShowQrFullscreen,
+        showCancelConfirm, setShowCancelConfirm,
+        showEditInfo, setShowEditInfo,
+        selectedCategories, setSelectedCategories,
+        cancelMutation, updateProfileMutation,
+        handleDownloadTicket, openEditModal
+    } = useVendorReservationDetail(reservationId);
 
-    const cancelMutation = useMutation({
-        mutationFn: async () => {
-            if (reservation?.status === 'PAID') {
-                return vendorApi.requestRefund(reservationId, 'Vendor requested refund from detail page');
-            }
-            return vendorApi.cancelReservation(reservationId);
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['reservation', reservationId] });
-            queryClient.invalidateQueries({ queryKey: ['reservations'] });
-            setShowCancelConfirm(false);
+    const location = useLocation();
+
+    // Catch Stripe Redirect to confirm payment intent coupling
+    useEffect(() => {
+        const query = new URLSearchParams(location.search);
+        const paymentIntent = query.get('payment_intent');
+        const redirectStatus = query.get('redirect_status');
+
+        if (paymentIntent && redirectStatus === 'succeeded') {
+            paymentApi.confirmPayment(reservationId, paymentIntent)
+                .then(() => {
+                    // Clean URL
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                })
+                .catch(err => console.error("Stripe confirm sync failed:", err));
         }
-    });
-
-    const updateProfileMutation = useMutation({
-        mutationFn: (categories: string[]) => vendorApi.updateProfile({ categories }),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['reservation', reservationId] });
-            setShowEditInfo(false);
-        }
-    });
-
-    const handleDownloadTicket = async () => {
-        if (isDownloading) return;
-        setIsDownloading(true);
-        try {
-            await vendorApi.downloadTicket(reservationId);
-        } catch (e) {
-            console.error('Download error', e);
-            alert('Failed to download ticket. Please try again.');
-        } finally {
-            setIsDownloading(false);
-        }
-    };
-
-    const openEditModal = () => {
-        setSelectedCategories(reservation?.user?.categories || []);
-        setShowEditInfo(true);
-    };
+    }, [location.search, reservationId]);
 
     if (isLoading) return (
         <div className="min-h-[60vh] flex flex-col items-center justify-center p-8 gap-4">
@@ -150,6 +125,22 @@ export const VendorReservationDetailPage = () => {
                                     Update Categories
                                 </button>
                             </div>
+
+                            {/* Pay Now — visible only for pending payment */}
+                            {status === 'PENDING_PAYMENT' && (
+                                <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl p-6 shadow-lg shadow-emerald-200">
+                                    <h4 className="text-sm font-black text-white mb-2 uppercase tracking-tight">Complete Payment</h4>
+                                    <p className="text-xs text-emerald-100 mb-5 font-medium leading-relaxed">
+                                        Your stall is reserved but not confirmed yet. Pay now to secure your booking before the slot expires.
+                                    </p>
+                                    <button
+                                        onClick={() => navigate(`/checkout/${reservation.id}`)}
+                                        className="w-full bg-white text-emerald-700 font-black py-3.5 rounded-2xl transition-all shadow-md uppercase text-[10px] tracking-widest hover:bg-emerald-50 active:scale-[0.98]"
+                                    >
+                                        Pay Now →
+                                    </button>
+                                </div>
+                            )}
 
                             <div className="bg-slate-50 border border-slate-100 rounded-3xl p-6 shadow-sm">
                                 <h4 className="text-sm font-black text-slate-800 mb-2 uppercase tracking-tight">Reservation Management</h4>

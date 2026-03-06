@@ -15,7 +15,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "stalls", "zones", "influences"})
 public class Event {
 
     @Id
@@ -45,12 +45,19 @@ public class Event {
     private Venue venue;
 
     @Column(columnDefinition = "TEXT")
-    private String layoutConfig; // JSON: { "mapUrl": "...", "width": 1000, "height": 600 }
+    private String mapUrl;
+    private Double mapWidth;
+    private Double mapHeight;
 
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
     private List<EventStall> stalls;
 
-    private String venueName;
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
+    private List<MapZone> zones;
+
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
+    private List<MapInfluence> influences;
+
 
     @Enumerated(EnumType.STRING)
     private EventStatus status;

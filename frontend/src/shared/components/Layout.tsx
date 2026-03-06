@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import Navbar from './Navbar';
+import HelpBot from './HelpBot/HelpBot';
 
 export default function Layout() {
     return (
@@ -7,9 +8,10 @@ export default function Layout() {
             <Navbar />
 
             {/* Main Content */}
-            <main className="flex-grow">
+            <main className="flex-1">
                 <Outlet />
             </main>
+            <HelpBot />
 
             {/* Footer */}
             <footer className="bg-white border-t border-gray-100 text-gray-500 py-10 mt-auto">

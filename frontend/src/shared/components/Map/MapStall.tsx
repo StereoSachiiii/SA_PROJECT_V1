@@ -4,14 +4,15 @@ import { MapStall, parseGeometry, getStallRenderState, parseScore } from '../../
 interface MapStallProps {
     stall: MapStall;
     selectedIds: number[];
+    showHeatmap: boolean;
     onStallClick: (stallId: number, isReserved: boolean) => void;
     onHoverChange: (stall: MapStall | null, anchorRect: DOMRect | null) => void;
 }
 
-export default function MapStallComponent({ stall, selectedIds, onStallClick, onHoverChange }: MapStallProps) {
-    const g = parseGeometry(stall.geometry);
+export default function MapStallComponent({ stall, selectedIds, showHeatmap, onStallClick, onHoverChange }: MapStallProps) {
+    const g = parseGeometry(stall);
     const renderState = getStallRenderState(stall, selectedIds);
-    const score = parseScore(stall.pricingBreakdown?.['Visibility Score']);
+    const score = stall.pricingBreakdown?.calculatedScore ?? parseScore(stall.pricingBreakdown?.['Visibility Score']);
 
     const stateStyles: Record<string, {
         bg: string; border: string; text: string; shadow: string
@@ -104,8 +105,9 @@ export default function MapStallComponent({ stall, selectedIds, onStallClick, on
                 <span className={[
                     'tabular-nums leading-none mt-0.5 font-bold opacity-100',
                     g.w > 8 ? 'text-[8px]' : 'text-[6px]',
+                    showHeatmap ? 'text-blue-600' : ''
                 ].join(' ')}>
-                    {Math.round(stall.priceCents / 100000)}L
+                    {showHeatmap ? `${score}%` : `${Math.round(stall.priceCents / 100000)}L`}
                 </span>
             )}
         </div>

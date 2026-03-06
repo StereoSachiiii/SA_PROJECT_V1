@@ -54,8 +54,10 @@ public class StallTemplate {
     @Column(nullable = false)
     private Integer defaultProximityScore;
 
-    @Column(columnDefinition = "TEXT")
-    private String geometry; // JSON representation
+    private Double posX;
+    private Double posY;
+    private Double width;
+    private Double height;
 
     private LocalDateTime deletedAt;
 }

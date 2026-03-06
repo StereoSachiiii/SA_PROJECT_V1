@@ -57,6 +57,13 @@ export function useEmployeeScanner() {
         if (qrInput) lookupMutation.mutate(qrInput);
     };
 
+    const directLookup = (qrOrId: string) => {
+        lookupMutation.reset();
+        setShowOverride(false);
+        setQrInput(qrOrId);
+        if (qrOrId) lookupMutation.mutate(qrOrId);
+    };
+
     const handleAdmit = () => {
         if (lookupResult?.reservationId) admitMutation.mutate(lookupResult.reservationId);
     };
@@ -93,6 +100,7 @@ export function useEmployeeScanner() {
         handleLookup,
         handleAdmit,
         handleForceCheckIn,
+        directLookup,
 
         // Lookup Status
         lookupLoading: lookupMutation.isPending,

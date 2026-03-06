@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Reservation Reminder</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+        <h2 style="color: #2c3e50;">Hello, <span th:text="${user.businessName}">Business Name</span>!</h2>
+        <p>This is a friendly reminder for your upcoming reservation at the <strong><span th:text="${event.name}">Event Name</span></strong>.</p>
+        
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+            <p><strong>Event Date:</strong> <span th:text="${#temporals.format(event.startDate, 'dd MMM yyyy HH:mm')}">Date</span></p>
+            <p><strong>Stall:</strong> <span th:text="${reservation.eventStall.stallTemplate.name}">Stall Name</span></p>
+            <p><strong>Location:</strong> <span th:text="${event.location}">Location</span></p>
+        </div>
+
+        <p>We look forward to seeing you there! Please make sure to have your QR code ready for entry.</p>
+        
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+        <p style="font-size: 0.8em; color: #777;">&copy; 2026 BookFair Platform. All rights reserved.</p>
+    </div>
+</body>
+</html>

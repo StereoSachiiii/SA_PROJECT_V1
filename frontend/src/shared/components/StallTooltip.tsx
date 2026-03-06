@@ -32,7 +32,7 @@ export function StallTooltip({ stall, anchorRect }: StallTooltipProps) {
   if (!anchorRect) return null
 
   const { left, top } = getTooltipPosition(anchorRect)
-  const score = parseScore(stall.pricingBreakdown?.['Visibility Score'])
+  const score = stall.pricingBreakdown?.calculatedScore ?? parseScore(stall.pricingBreakdown?.['Visibility Score'])
   const drivers = stall.pricingBreakdown?.['Value Drivers'] ?? []
   const baseRate = stall.pricingBreakdown?.['Base Rate']
   const { bar: barColor, label: scoreLabel } = scoreToColor(score)

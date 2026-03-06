@@ -19,7 +19,7 @@ public class JwtUtils {
     private String jwtSecret;
 
     @Value("${app.jwtExpirationMs:86400000}")
-    private int jwtExpirationMs;
+    private long jwtExpirationMs;
 
     public String generateJwtToken(Authentication authentication) {
         UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
@@ -36,6 +36,10 @@ public class JwtUtils {
     }
     
     private Key key() {
+        // If the secret is 64 chars long and contains only hex chars, it's likely HEX encoded (256 bits)
+        if (jwtSecret != null && jwtSecret.length() == 64 && jwtSecret.matches("^[0-9a-fA-F]+$")) {
+            return Keys.hmacShaKeyFor(java.util.HexFormat.of().parseHex(jwtSecret));
+        }
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
     }
 
@@ -56,6 +60,8 @@ public class JwtUtils {
             log.error("JWT token is unsupported: {}", e.getMessage());
         } catch (IllegalArgumentException e) {
             log.error("JWT claims string is empty: {}", e.getMessage());
+        } catch (io.jsonwebtoken.security.SignatureException e) {
+            log.error("JWT signature is invalid: {}", e.getMessage());
         }
 
         return false;

@@ -79,9 +79,9 @@ public class DocumentController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteDocument(@PathVariable Long id, Principal principal) {
+    public ResponseEntity<com.bookfair.dto.response.GenericActionResponse> deleteDocument(@PathVariable Long id, Principal principal) {
         User requestor = userService.getByUsernameForServices(principal.getName());
         documentService.deleteDocument(id, requestor);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(new com.bookfair.dto.response.GenericActionResponse(true, "Document deleted"));
     }
 }

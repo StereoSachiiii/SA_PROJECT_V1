@@ -1,6 +1,5 @@
 package com.bookfair.dto.response;
 
-import com.bookfair.entity.Event;
 import lombok.Builder;
 import lombok.Data;
 
@@ -19,6 +18,8 @@ public class EventResponse {
     private Long venueId;
     private String venueName;
     private String status;
-    private String layoutConfig;
+    private String mapUrl;
+    private Double mapWidth;
+    private Double mapHeight;
     private LocalDateTime createdAt;
 }

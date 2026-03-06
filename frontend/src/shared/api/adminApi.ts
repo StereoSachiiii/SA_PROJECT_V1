@@ -13,7 +13,11 @@ import {
     Reservation,
     Venue,
     Building,
-    putHallRequest
+    MapZone,
+    MapInfluence,
+    putHallRequest,
+    PhysicalConstraint,
+    EventStallAdminResponse
 } from '../types/api';
 
 interface RefundResponse {
@@ -27,7 +31,7 @@ interface RefundResponse {
 export const adminApi = {
     // ─── AUDIT LOGS ───────────────────────────────────────────────
     getAuditLogs: async (entityType?: string, page = 0, actorId?: number): Promise<PageEnvelope<AuditLog>> => {
-        const response = await api.get<PageEnvelope<AuditLog>>('/admin/audit/logs', {
+        const response = await api.get<PageEnvelope<AuditLog>>('/admin/audit-logs', {
             params: { entityType, page, actorId }
         });
         return response.data;
@@ -56,6 +60,11 @@ export const adminApi = {
         return response.data;
     },
 
+    getEventStalls: async (eventId: number): Promise<EventStallAdminResponse[]> => {
+        const response = await api.get<EventStallAdminResponse[]>(`/admin/events/${eventId}/stalls`);
+        return response.data;
+    },
+
     createEvent: async (data: Partial<Event>): Promise<Event> => {
         const response = await api.post<Event>('/admin/events', data);
         return response.data;
@@ -81,9 +90,16 @@ export const adminApi = {
     },
 
     // ─── LAYOUT MANAGEMENT ───────────────────────────────────────
-    saveLayout: async (eventId: number, stalls: Partial<EventStall>[]): Promise<EventStall[]> => {
-        const response = await api.post<EventStall[]>(`/admin/events/${eventId}/stalls`, stalls);
-        return response.data;
+    saveLayout: async (eventId: number, stalls: any[]): Promise<void> => {
+        await api.post(`/admin/events/${eventId}/layout`, stalls);
+    },
+
+    saveZones: async (eventId: number, zones: Partial<MapZone>[]): Promise<void> => {
+        await api.post(`/admin/events/${eventId}/zones`, zones);
+    },
+
+    saveInfluences: async (eventId: number, influences: Partial<MapInfluence>[]): Promise<void> => {
+        await api.post(`/admin/events/${eventId}/influences`, influences);
     },
 
     uploadVenueMap: async (eventId: number, file: File): Promise<{ url: string }> => {
@@ -106,16 +122,14 @@ export const adminApi = {
         return response.data;
     },
 
-    confirmPayment: async (reservationId: number): Promise<{ confirmed: boolean; reservationId: number }> => {
-        const response = await api.post<{ confirmed: boolean; reservationId: number }>(`/admin/reservations/${reservationId}/confirm`);
-        return response.data;
+    confirmPayment: async (reservationId: number): Promise<void> => {
+        await api.post(`/admin/reservations/${reservationId}/confirm-payment`);
     },
 
-    cancelReservation: async (reservationId: number, reason = 'Admin cancelled'): Promise<{ cancelled: boolean; reservationId: number }> => {
-        const response = await api.delete<{ cancelled: boolean; reservationId: number }>(`/admin/reservations/${reservationId}`, {
+    cancelReservation: async (reservationId: number, reason = 'Admin cancelled'): Promise<void> => {
+        await api.post(`/admin/reservations/${reservationId}/cancel`, null, {
             params: { reason }
         });
-        return response.data;
     },
 
     exportReservationsCsv: async (): Promise<void> => {
@@ -136,6 +150,11 @@ export const adminApi = {
             reservationId,
             reason
         });
+        return response.data;
+    },
+
+    getPendingRefunds: async (): Promise<Reservation[]> => {
+        const response = await api.get<Reservation[]>('/admin/refunds/pending');
         return response.data;
     },
 
@@ -166,7 +185,7 @@ export const adminApi = {
     },
 
     updateHall: async (id: number, data: putHallRequest): Promise<Hall> => {
-        const response = await api.put<putHallRequest>(`/admin/halls/${id}`, data);
+        const response = await api.put<Hall>(`/admin/halls/${id}`, data);
         return response.data;
     },
 
@@ -183,9 +202,8 @@ export const adminApi = {
         await api.delete(`/admin/halls/${id}/destroy`);
     },
 
-    updateHallLayout: async (id: number, staticLayout: string): Promise<{ updated: boolean }> => {
-        const response = await api.post<{ updated: boolean }>(`/admin/halls/${id}/static-layout`, { staticLayout });
-        return response.data;
+    updateHallLayout: async (id: number, constraints: PhysicalConstraint[]): Promise<void> => {
+        await api.put(`/admin/halls/${id}/layout`, constraints);
     },
 
     // ─── STALL INVENTORY ─────────────────────────────────────────
@@ -209,9 +227,8 @@ export const adminApi = {
         return response.data;
     },
 
-    bulkPriceAdjust: async (hallId: number, percentage: number): Promise<{ adjusted: boolean; percentage: number }> => {
-        const response = await api.post<{ adjusted: boolean; percentage: number }>(`/admin/halls/${hallId}/price-adjust`, { percentage });
-        return response.data;
+    bulkPriceAdjust: async (hallId: number, percentage: number): Promise<void> => {
+        await api.post(`/admin/halls/${hallId}/price-adjust`, { percentage });
     },
 
     exportStallsCsv: async (hallId: number): Promise<void> => {
@@ -228,7 +245,7 @@ export const adminApi = {
 
     // ─── PRICING ─────────────────────────────────────────────────
     updateStallPrice: async (stallId: number, baseRateCents: number, multiplier: number): Promise<EventStall> => {
-        const response = await api.patch<EventStall>(`/admin/stalls/${stallId}/price`, {
+        const response = await api.put<EventStall>(`/admin/stalls/${stallId}/price`, {
             baseRateCents,
             multiplier
         });

@@ -32,7 +32,7 @@ export default function RefundSearch({ onSearch, loading }: RefundSearchProps) {
                 </button>
             </div>
             <p className="mt-3 text-[10px] font-semibold text-gray-400 uppercase">
-                Note: Refunds apply to <span className="text-blue-600">PAID</span> reservations only.
+                Note: Refunds apply to <span className="text-blue-600">PAID</span> or <span className="text-amber-600">PENDING_REFUND</span> reservations only.
             </p>
         </div>
     );

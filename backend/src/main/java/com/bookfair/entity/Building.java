@@ -29,7 +29,7 @@ public class Building {
     private String name;
 
     @com.fasterxml.jackson.annotation.JsonProperty("gps")
-    private String gpsCoordinates;
+    private String gpsLocation;
 
     @OneToMany(mappedBy = "building", cascade = CascadeType.ALL)
     private List<Hall> halls;

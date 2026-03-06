@@ -45,7 +45,7 @@ public class EventController {
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
                 .location(request.getLocation())
-                .status(request.getStatus() != null ? request.getStatus() : Event.EventStatus.UPCOMING)
+                .status(parseEventStatus(request.getStatus()))
                 .build();
         
         return ResponseEntity.ok(mapToResponse(eventService.createEvent(event)));
@@ -71,9 +71,9 @@ public class EventController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteEvent(@PathVariable Long id) {
+    public ResponseEntity<com.bookfair.dto.response.GenericActionResponse> deleteEvent(@PathVariable Long id) {
         eventService.deleteEvent(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(new com.bookfair.dto.response.GenericActionResponse(true, "Event deleted"));
     }
 
     private EventResponse mapToResponse(Event event) {
@@ -87,9 +87,21 @@ public class EventController {
                 .venueId(event.getVenue() != null ? event.getVenue().getId() : null)
                 .venueName(event.getVenue() != null ? event.getVenue().getName() : null)
                 .status(event.getStatus().name())
-                .layoutConfig(event.getLayoutConfig()) // JSON for frontend map
+                .mapUrl(event.getMapUrl())
+                .mapWidth(event.getMapWidth())
+                .mapHeight(event.getMapHeight())
                 .imageUrl(event.getImageUrl())
                 .createdAt(event.getCreatedAt())
                 .build();
+    }
+
+    private Event.EventStatus parseEventStatus(String status) {
+        if (status == null || status.isBlank()) return Event.EventStatus.UPCOMING;
+        try {
+            return Event.EventStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            // Legacy value like DRAFT - default to UPCOMING
+            return Event.EventStatus.UPCOMING;
+        }
     }
 }

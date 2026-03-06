@@ -18,5 +18,4 @@ public class UserResponse {
     private java.util.List<String> categories;
     private String contactNumber;
     private String address;
-    private Integer reservedStallsCount;
 }
