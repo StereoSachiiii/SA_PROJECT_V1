@@ -7,6 +7,7 @@ import AdminDashboardPage from './pages/Dashboard';
 import StallDesignerPage from './pages/StallDesigner/StallDesignerPage';
 import AdminReservationManager from './pages/AdminReservationManager';
 import HallManagement from './pages/HallManagement';
+import StallInventory from './pages/StallInventory';
 
 import RefundsPage from './pages/Refunds';
 import AuditLogsPage from './pages/AuditLogs';
@@ -27,6 +28,7 @@ const AdminRoutes = () => {
         <Routes>
             <Route element={<ProtectedRoute allowedRoles={['ADMIN']}><AdminLayout /></ProtectedRoute>}>
                 <Route path="dashboard" element={<AdminDashboardPage />} />
+                <Route path="halls/:id/inventory" element={<StallInventory />} />
                 <Route path="halls/:hallId/designer" element={<StallDesignerPage />} />
                 <Route path="reservations" element={<AdminReservationManager />} />
                 <Route path="reservations/:id" element={<VendorReservationDetailPage />} />

@@ -8,7 +8,7 @@ export default function EmployeeLayout() {
 
     const handleLogout = () => {
         logout();
-        navigate('/');
+        navigate('/employee/login');
     };
 
     const isActive = (path: string) => {

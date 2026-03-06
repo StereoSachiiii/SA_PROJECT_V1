@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { adminApi } from '@/shared/api/adminApi';
 import { Hall, Event, Venue, Building } from '@/shared/types/api';
 import { Plus, CheckCircle2 } from 'lucide-react';
@@ -8,6 +9,9 @@ import { HallDetailsModal } from '../components/HallManagement/HallDetailsModal'
 import { LoadingState } from '@/shared/components/LoadingState';
 
 export default function HallManagement() {
+    const [searchParams] = useSearchParams();
+    const eventIdParam = searchParams.get('eventId');
+
     type ViewMode = 'EVENTS' | 'VENUES' | 'BUILDINGS' | 'HALLS';
     const [viewMode, setViewMode] = useState<ViewMode>('EVENTS');
 
@@ -57,6 +61,11 @@ export default function HallManagement() {
                             }
                         }
                         setViewMode(mode);
+                    }
+                } else if (eventIdParam) {
+                    const event = data.find(e => e.id === Number(eventIdParam));
+                    if (event) {
+                        handleSelectEvent(event);
                     }
                 }
             } catch (err) {

@@ -18,24 +18,22 @@ const PublicRoute = ({ children }: PublicRouteProps) => {
 
     if (isAuthenticated) {
         const isStaffLogin = location.pathname === '/admin/login' || location.pathname === '/employee/login';
-        const isVendorLogin = location.pathname === '/login' || location.pathname === '/';
+        const isVendorLogin = location.pathname === '/login' || location.pathname === '/' || location.pathname === '/register';
 
-        if (isStaffLogin && role === 'VENDOR') return children ? <>{children}</> : <Outlet />;
-        if (isVendorLogin && (role === 'ADMIN' || role === 'EMPLOYEE')) return children ? <>{children}</> : <Outlet />;
+        // ALLOW Admin/Employee to access Public Login/Register IF they are not in their corresponding portal
+        // This prevents them from being "trapped" if they want to browse as a customer
+        // However, we should redirect them to THEIR dashboard if they are already in the right place
 
-        // Contextual Redirect: Keep user in the portal they are trying to access
         const isStaffPage = location.pathname.startsWith('/admin') || location.pathname.startsWith('/employee');
 
         if (isStaffPage) {
-            // If on a staff login page, send to staff dashboard
             if (role === 'ADMIN') return <Navigate to="/admin/dashboard" replace />;
             if (role === 'EMPLOYEE') return <Navigate to="/employee" replace />;
-            // If VENDOR is on staff login, they are technically unauthorized for this portal context
-            // But since they are authenticated, we redirect them to THEIR portal (User Portal)
             return <Navigate to="/vendor/dashboard" replace />;
-        } else {
-            // If on a User/Vendor login page (/login or /), send to User Dashboard
-            // Even if Admin, we "Treat them as a regular customer" for this context
+        } else if (isVendorLogin) {
+            // Contextual Redirect for public login/root
+            if (role === 'ADMIN') return <Navigate to="/admin/dashboard" replace />;
+            if (role === 'EMPLOYEE') return <Navigate to="/employee" replace />;
             return <Navigate to="/vendor/dashboard" replace />;
         }
     }

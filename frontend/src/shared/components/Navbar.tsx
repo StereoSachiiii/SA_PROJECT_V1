@@ -105,7 +105,7 @@ export default function Navbar() {
                             </div>
                         ) : (
                             <div className="flex items-center gap-4">
-                                <Link to="/" className="text-gray-600 font-bold hover:text-primary-600 transition-colors">
+                                <Link to="/login" className="text-gray-600 font-bold hover:text-primary-600 transition-colors">
                                     Login
                                 </Link>
                                 <Link to="/register" className="px-6 py-2.5 text-sm font-bold text-white bg-secondary hover:bg-black rounded-xl shadow-lg transition-all duration-300 transform hover:-translate-y-0.5">

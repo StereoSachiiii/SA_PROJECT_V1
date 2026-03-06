@@ -1,5 +1,5 @@
 import React from 'react';
-import { Building2, Globe, Edit, Archive, PenTool } from 'lucide-react';
+import { Building2, Globe, Edit, Archive, PenTool, ClipboardList } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Hall } from '@/shared/types/api';
 import { StatusBadge } from '@/shared/components/StatusBadge';
@@ -68,9 +68,18 @@ export const HallList: React.FC<HallListProps> = ({
                         <Link
                             to={`/admin/halls/${hall.id}/designer`}
                             className="flex-1 text-center py-2 bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white rounded-lg font-bold text-[10px] uppercase transition-all flex items-center justify-center gap-1.5"
+                            title="Visual Layout Designer"
                         >
                             <PenTool size={12} />
-                            Design Layout
+                            Layout
+                        </Link>
+                        <Link
+                            to={`/admin/halls/${hall.id}/inventory`}
+                            className="flex-1 text-center py-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded-lg font-bold text-[10px] uppercase transition-all flex items-center justify-center gap-1.5"
+                            title="Stall Inventory List"
+                        >
+                            <ClipboardList size={12} />
+                            Inventory
                         </Link>
                         {hall.status !== 'PUBLISHED' && (
                             <button

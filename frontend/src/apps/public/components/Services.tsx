@@ -20,7 +20,7 @@ function Services() {
                     </div>
                     <div className="p-6 flex-grow flex flex-col justify-between">
                         <p className="text-gray-500 text-sm mb-4">Book your perfect spot instantly.</p>
-                        <a href="/stalls" className="text-primary-600 font-bold text-sm hover:text-primary-700">Book Now →</a>
+                        <a href="/events" className="text-primary-600 font-bold text-sm hover:text-primary-700">Book Now →</a>
                     </div>
                 </div>
 
@@ -37,7 +37,7 @@ function Services() {
                     </div>
                     <div className="p-6 flex-grow flex flex-col justify-between">
                         <p className="text-gray-500 text-sm mb-4">View real-time floor plan availability.</p>
-                        <a href="/stalls" className="text-primary-600 font-bold text-sm hover:text-primary-700">View Map →</a>
+                        <a href="/events" className="text-primary-600 font-bold text-sm hover:text-primary-700">View Map →</a>
                     </div>
                 </div>
 
