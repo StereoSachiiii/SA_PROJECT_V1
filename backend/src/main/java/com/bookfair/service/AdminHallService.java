@@ -3,6 +3,8 @@ package com.bookfair.service;
 import com.bookfair.entity.Hall;
 import com.bookfair.entity.HallStatus;
 import com.bookfair.repository.HallRepository;
+import com.bookfair.mapper.AdminMapper;
+import com.bookfair.dto.response.HallResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,16 +12,20 @@ import com.bookfair.exception.ResourceNotFoundException;
 import com.bookfair.exception.BadRequestException;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class AdminHallService {
 
     private final HallRepository hallRepository;
+    private final AdminMapper adminMapper;
 
     @Transactional(readOnly = true)
-    public List<Hall> getAllHalls() {
-        return hallRepository.findAll();
+    public List<HallResponse> getAllHalls() {
+        return hallRepository.findAll().stream()
+                .map(adminMapper::mapToHallResponse)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)

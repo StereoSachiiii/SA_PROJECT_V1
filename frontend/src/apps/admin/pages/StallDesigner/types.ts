@@ -5,25 +5,33 @@ export type DesignerDrawMode = 'STALL' | 'ZONE' | 'INFLUENCE';
 export interface DesignerZone {
     id: string; // usually UUID
     type: 'WALKWAY' | 'STAGE' | 'ENTRANCE';
-    geometry: { x: number; y: number; w: number; h: number };
+    posX: number;
+    posY: number;
+    width: number;
+    height: number;
     label: string;
 }
 
 export interface DesignerInfluence {
     id: string;
     type: 'NOISE' | 'TRAFFIC' | 'FACILITY';
-    x: number; // percentage cx
-    y: number; // percentage cy
+    posX: number; // percentage cx
+    posY: number; // percentage cy
     radius: number; // percentage r
     intensity: number; // 0-100
-    falloff: 'linear' | 'exponential';
+    falloff: string; // 'linear'|'LINEAR'|'exponential'|'EXPONENTIAL'
 }
 
 export interface DesignerStall {
     id: number;
     name: string;
-    geometry: { x: number; y: number; w: number; h: number };
+    posX: number;
+    posY: number;
+    width: number;
+    height: number;
     priceCents: number;
+    baseRateCents: number;
+    pricingVersion: string;
     size: StallSize;
     category: StallCategory;
     isAvailable: boolean;
@@ -60,4 +68,4 @@ export function stallColor(cat: StallCategory, isSelected: boolean): string {
     }
 }
 
-export const formatPrice = (cents: number) => `LKR ${(cents / 100).toLocaleString()}`;
+export const formatPrice = (cents: number) => `LKR ${(cents / 100).toLocaleString()} `;
