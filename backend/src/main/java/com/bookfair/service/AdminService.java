@@ -36,6 +36,7 @@ public class AdminService {
     private final HallRepository hallRepository;
     private final UserRepository userRepository;
     private final AuditLogRepository auditLogRepository;
+    private final PricingEngineService pricingEngineService;
     private final ObjectMapper objectMapper;
 
     // ─── MAP UPLOAD ───────────────────────────────────────────────
@@ -103,8 +104,16 @@ public class AdminService {
                 existing.setGeometry(dto.getGeometry());
                 existing.setPricingVersion("MANUAL_LAYOUT_UPDATE");
                 if (dto.getFinalPriceCents() != null) {
+                    existing.setBaseRateCents(dto.getFinalPriceCents());
                     existing.setFinalPriceCents(dto.getFinalPriceCents());
                 }
+                
+                if (existing.getStallTemplate() != null) {
+                    if (dto.getSize() != null) existing.getStallTemplate().setSize(dto.getSize());
+                    if (dto.getCategory() != null) existing.getStallTemplate().setCategory(dto.getCategory());
+                    stallTemplateRepository.save(existing.getStallTemplate());
+                }
+                
                 if (dto.getName() != null && existing.getStallTemplate() != null) {
                     existing.getStallTemplate().setName(dto.getName());
                 }
@@ -118,9 +127,9 @@ public class AdminService {
                 StallTemplate template = StallTemplate.builder()
                         .name(dto.getName())
                         .hall(hall)
-                        .size(StallSize.MEDIUM) // Default
+                        .size(dto.getSize() != null ? dto.getSize() : StallSize.MEDIUM)
                         .type(StallType.STANDARD)
-                        .category(StallCategory.RETAIL)
+                        .category(dto.getCategory() != null ? dto.getCategory() : StallCategory.RETAIL)
                         .basePriceCents(dto.getFinalPriceCents() != null ? dto.getFinalPriceCents() : 500000L)
                         .defaultProximityScore(50)
                         .geometry(dto.getGeometry())
@@ -135,11 +144,12 @@ public class AdminService {
                         .baseRateCents(template.getBasePriceCents())
                         .multiplier(1.0)
                         .proximityBonusCents(0L)
-                        .finalPriceCents(template.getBasePriceCents())
+                        .finalPriceCents(dto.getFinalPriceCents() != null ? dto.getFinalPriceCents() : template.getBasePriceCents())
                         .geometry(dto.getGeometry())
                         .status(EventStallStatus.AVAILABLE)
-                        .pricingVersion("DESIGNER_INIT")
+                        .pricingVersion("DESIGNER_V2")
                         .build();
+                
                 return es;
             }
             return null;

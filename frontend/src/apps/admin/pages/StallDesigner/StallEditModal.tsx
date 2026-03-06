@@ -1,15 +1,45 @@
+import { useState } from 'react';
 import { useDesigner } from './DesignerContext';
 import { STALL_SIZES, STALL_CATEGORIES } from '@/shared/constants';
 import { StallSize, StallCategory } from '@/shared/types/api';
+import { adminApi } from '@/shared/api/adminApi';
 
 export function StallEditModal() {
-    const { stalls, editingStallId, updateStall, deleteStall, setEditingStallId } = useDesigner();
+    const { stalls, influences, editingStallId, updateStall, deleteStall, setEditingStallId } = useDesigner();
+    const [calculating, setCalculating] = useState(false);
+    const [breakdown, setBreakdown] = useState<{ multiplier: number; drivers: Array<{ label: string; value: string }> } | null>(null);
 
     if (!editingStallId) return null;
     const stall = stalls.find(s => s.id === editingStallId);
     if (!stall) return null;
 
-    const onClose = () => setEditingStallId(null);
+    const onClose = () => { setEditingStallId(null); setBreakdown(null); };
+
+    const handleAutoCalculate = async () => {
+        setCalculating(true);
+        try {
+            const result = await adminApi.calculatePrice({
+                geometry: JSON.stringify(stall.geometry),
+                size: stall.size,
+                category: stall.category,
+                baseRateCents: stall.priceCents,
+                influences: influences.map(inf => ({
+                    type: inf.type,
+                    x: inf.x,
+                    y: inf.y,
+                    radius: inf.radius,
+                    intensity: inf.intensity,
+                    falloff: inf.falloff
+                }))
+            });
+            updateStall(stall.id, { priceCents: result.finalPriceCents });
+            setBreakdown({ multiplier: result.multiplier, drivers: result.drivers });
+        } catch (err) {
+            console.error('Price calculation failed:', err);
+        } finally {
+            setCalculating(false);
+        }
+    };
 
     return (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 backdrop-blur-sm" onClick={onClose}>
@@ -40,7 +70,7 @@ export function StallEditModal() {
                             <label className="text-[10px] font-bold text-gray-400 uppercase">Size</label>
                             <select
                                 value={stall.size}
-                                onChange={e => updateStall(stall.id, { size: e.target.value as StallSize })}
+                                onChange={e => { updateStall(stall.id, { size: e.target.value as StallSize }); setBreakdown(null); }}
                                 className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-bold bg-white focus:ring-2 focus:ring-blue-500 outline-none"
                             >
                                 {STALL_SIZES.map(s => <option key={s} value={s}>{s}</option>)}
@@ -50,7 +80,7 @@ export function StallEditModal() {
                             <label className="text-[10px] font-bold text-gray-400 uppercase">Category</label>
                             <select
                                 value={stall.category}
-                                onChange={e => updateStall(stall.id, { category: e.target.value as StallCategory })}
+                                onChange={e => { updateStall(stall.id, { category: e.target.value as StallCategory }); setBreakdown(null); }}
                                 className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-bold bg-white focus:ring-2 focus:ring-blue-500 outline-none"
                             >
                                 {STALL_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
@@ -58,27 +88,56 @@ export function StallEditModal() {
                         </div>
                     </div>
 
-                    {/* Price + SqFt */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-gray-400 uppercase">Price (LKR)</label>
-                            <input
-                                type="number" step="100"
-                                value={(stall.priceCents / 100).toFixed(0)}
-                                onChange={e => updateStall(stall.id, { priceCents: parseFloat(e.target.value) * 100 })}
-                                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none"
-                            />
+                    {/* Price + Auto Calculate */}
+                    <div className="space-y-2">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-gray-400 uppercase">Price (LKR)</label>
+                                <input
+                                    type="number" step="100"
+                                    value={(stall.priceCents / 100).toFixed(0)}
+                                    onChange={e => { updateStall(stall.id, { priceCents: parseFloat(e.target.value) * 100 }); setBreakdown(null); }}
+                                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-gray-400 uppercase">Area (sqft)</label>
+                                <input
+                                    type="number"
+                                    value={stall.sqFt || ''}
+                                    onChange={e => updateStall(stall.id, { sqFt: parseInt(e.target.value) || undefined })}
+                                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none"
+                                    placeholder="—"
+                                />
+                            </div>
                         </div>
-                        <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-gray-400 uppercase">Area (sqft)</label>
-                            <input
-                                type="number"
-                                value={stall.sqFt || ''}
-                                onChange={e => updateStall(stall.id, { sqFt: parseInt(e.target.value) || undefined })}
-                                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none"
-                                placeholder="—"
-                            />
-                        </div>
+                        <button
+                            onClick={handleAutoCalculate}
+                            disabled={calculating}
+                            className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg font-bold text-xs uppercase transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                        >
+                            {calculating ? (
+                                <><span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Calculating...</>
+                            ) : (
+                                <>⚡ Auto Calculate Price</>
+                            )}
+                        </button>
+
+                        {/* Breakdown */}
+                        {breakdown && (
+                            <div className="bg-blue-50 rounded-lg p-3 space-y-1.5 text-[11px]">
+                                <div className="flex justify-between font-bold text-blue-700">
+                                    <span>Multiplier</span>
+                                    <span>{breakdown.multiplier}x</span>
+                                </div>
+                                {breakdown.drivers.map((d, i) => (
+                                    <div key={i} className="flex justify-between text-blue-600/80">
+                                        <span>{d.label}</span>
+                                        <span className="font-mono">{d.value}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* Position + Size */}
@@ -123,3 +182,4 @@ export function StallEditModal() {
         </div>
     );
 }
+

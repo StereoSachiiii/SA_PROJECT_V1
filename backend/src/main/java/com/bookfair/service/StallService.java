@@ -98,6 +98,9 @@ public class StallService {
             }
             response.setSize(template.getSize().name());
             response.setType(template.getType().name());
+            if (template.getCategory() != null) {
+                response.setCategory(template.getCategory().name());
+            }
             response.setProximityScore(template.getDefaultProximityScore());
             // Prioritize EventStall geometry (custom for event) then template
             response.setGeometry(eventStall.getGeometry() != null ? 
@@ -115,52 +118,55 @@ public class StallService {
         java.util.List<java.util.Map<String, Object>> drivers = new java.util.ArrayList<>();
 
         try {
-            if (eventStall.getStallTemplate().getHall() != null) {
-                String hallLayout = eventStall.getStallTemplate().getHall().getStaticLayout();
-                if (hallLayout != null && !hallLayout.trim().isEmpty() && !hallLayout.equals("{}")) {
-                    com.fasterxml.jackson.databind.JsonNode hallNode = objectMapper.readTree(hallLayout);
-                    com.fasterxml.jackson.databind.JsonNode influences = hallNode.get("influences");
-                    
-                    double hallWidth = hallNode.has("width") ? hallNode.get("width").asDouble() : 1000.0;
-                    double hallHeight = hallNode.has("height") ? hallNode.get("height").asDouble() : 800.0;
-                    
-                    String geometryStr = eventStall.getGeometry();
-                    if (geometryStr == null || geometryStr.trim().isEmpty()) {
-                        geometryStr = eventStall.getStallTemplate().getGeometry();
-                    }
+            // Read influences from the EVENT's layoutConfig (where the designer saves them)
+            String layoutConfig = eventStall.getEvent() != null ? eventStall.getEvent().getLayoutConfig() : null;
+            // Fallback: try hall's static layout
+            if ((layoutConfig == null || layoutConfig.trim().isEmpty() || layoutConfig.equals("{}")) 
+                    && eventStall.getStallTemplate() != null && eventStall.getStallTemplate().getHall() != null) {
+                layoutConfig = eventStall.getStallTemplate().getHall().getStaticLayout();
+            }
 
-                    if (geometryStr != null && !geometryStr.trim().isEmpty()) {
-                        com.fasterxml.jackson.databind.JsonNode stallGeom = objectMapper.readTree(geometryStr);
-                        if (stallGeom.has("x") && stallGeom.has("y")) {
-                            double stallX = stallGeom.get("x").asDouble() + (stallGeom.has("w") ? stallGeom.get("w").asDouble() / 2 : 0);
-                            double stallY = stallGeom.get("y").asDouble() + (stallGeom.has("h") ? stallGeom.get("h").asDouble() / 2 : 0);
+            if (layoutConfig != null && !layoutConfig.trim().isEmpty() && !layoutConfig.equals("{}")) {
+                com.fasterxml.jackson.databind.JsonNode layoutNode = objectMapper.readTree(layoutConfig);
+                com.fasterxml.jackson.databind.JsonNode influences = layoutNode.get("influences");
+                
+                double layoutW = layoutNode.has("width") ? layoutNode.get("width").asDouble() : 1000.0;
+                double layoutH = layoutNode.has("height") ? layoutNode.get("height").asDouble() : 600.0;
+                
+                String geometryStr = eventStall.getGeometry();
+                if (geometryStr == null || geometryStr.trim().isEmpty()) {
+                    geometryStr = eventStall.getStallTemplate().getGeometry();
+                }
 
-                            if (influences != null && influences.isArray()) {
-                                for (com.fasterxml.jackson.databind.JsonNode influence : influences) {
-                                    double infX = influence.get("x").asDouble();
-                                    double infY = influence.get("y").asDouble();
-                                    double radius = influence.get("radius").asDouble();
-                                    int intensity = influence.get("intensity").asInt();
-                                    String typeStr = influence.get("type").asText();
-                                    String falloffStr = influence.get("falloff").asText();
+                if (geometryStr != null && !geometryStr.trim().isEmpty()) {
+                    com.fasterxml.jackson.databind.JsonNode stallGeom = objectMapper.readTree(geometryStr);
+                    if (stallGeom.has("x") && stallGeom.has("y")) {
+                        // Stall geometry is in percentage (0-100), convert to pixels for comparison
+                        double stallX = (stallGeom.get("x").asDouble() + (stallGeom.has("w") ? stallGeom.get("w").asDouble() / 2 : 0)) / 100.0 * layoutW;
+                        double stallY = (stallGeom.get("y").asDouble() + (stallGeom.has("h") ? stallGeom.get("h").asDouble() / 2 : 0)) / 100.0 * layoutH;
 
-                                    double normStallX = (stallX / 100.0) * hallWidth;
-                                    double normStallY = (stallY / 100.0) * hallHeight;
+                        if (influences != null && influences.isArray()) {
+                            for (com.fasterxml.jackson.databind.JsonNode influence : influences) {
+                                double infX = influence.get("x").asDouble();
+                                double infY = influence.get("y").asDouble();
+                                double radius = influence.get("radius").asDouble();
+                                int intensity = influence.get("intensity").asInt();
+                                String typeStr = influence.get("type").asText();
+                                String falloffStr = influence.get("falloff").asText();
 
-                                    double dist = Math.sqrt(Math.pow(normStallX - infX, 2) + Math.pow(normStallY - infY, 2));
+                                double dist = Math.sqrt(Math.pow(stallX - infX, 2) + Math.pow(stallY - infY, 2));
 
-                                    if (dist < radius) {
-                                        double factor = 1.0 - (dist / radius);
-                                        if ("EXPONENTIAL".equals(falloffStr)) factor = Math.pow(factor, 2);
-                                        
-                                        int contribution = (int) (intensity * factor);
-                                        if (contribution > 0) {
-                                            calculatedScore += contribution;
-                                            java.util.Map<String, Object> driver = new java.util.HashMap<>();
-                                            driver.put("label", typeStr + " Proximity");
-                                            driver.put("value", "+" + contribution);
-                                            drivers.add(driver);
-                                        }
+                                if (dist < radius) {
+                                    double factor = 1.0 - (dist / radius);
+                                    if ("EXPONENTIAL".equals(falloffStr)) factor = Math.pow(factor, 2);
+                                    
+                                    int contribution = (int) (intensity * factor);
+                                    if (contribution > 0) {
+                                        calculatedScore += contribution;
+                                        java.util.Map<String, Object> driver = new java.util.HashMap<>();
+                                        driver.put("label", typeStr + " Proximity");
+                                        driver.put("value", "+" + contribution);
+                                        drivers.add(driver);
                                     }
                                 }
                             }

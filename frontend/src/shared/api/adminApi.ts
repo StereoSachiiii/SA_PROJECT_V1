@@ -234,4 +234,23 @@ export const adminApi = {
         });
         return response.data;
     },
+
+    /** Stateless on-demand price calculation */
+    calculatePrice: async (data: {
+        geometry: string;
+        size: string;
+        category: string;
+        baseRateCents: number;
+        influences: Array<{
+            type: string;
+            x: number;
+            y: number;
+            radius: number;
+            intensity: number;
+            falloff: string;
+        }>;
+    }): Promise<{ finalPriceCents: number; multiplier: number; baseRateCents: number; drivers: Array<{ label: string; value: string }> }> => {
+        const response = await api.post('/admin/pricing/calculate', data);
+        return response.data;
+    },
 };

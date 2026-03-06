@@ -20,6 +20,7 @@ public class AdminController {
     private final AdminService adminService;
     private final AdminHallService adminHallService;
     private final AdminStallService adminStallService;
+    private final PricingEngineService pricingEngineService;
     private final com.bookfair.service.UserService userService;
     private final com.bookfair.repository.VenueRepository venueRepository;
     private final com.bookfair.repository.BuildingRepository buildingRepository;
@@ -235,6 +236,13 @@ public class AdminController {
         map.put("baseRateCents", request.getBaseRateCents());
         map.put("multiplier", request.getMultiplier());
         return ResponseEntity.ok(adminService.updateStallPrice(stallId, map));
+    }
+
+    /** Stateless on-demand price calculation for the designer */
+    @PostMapping("/pricing/calculate")
+    public ResponseEntity<Map<String, Object>> calculatePrice(
+            @RequestBody com.bookfair.dto.request.PriceCalculateRequest request) {
+        return ResponseEntity.ok(pricingEngineService.calculateFromRequest(request));
     }
 
     // ─── PAYMENTS / REFUNDS ──────────────────────────────────────

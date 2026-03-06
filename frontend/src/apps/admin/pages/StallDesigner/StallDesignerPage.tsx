@@ -68,7 +68,7 @@ export default function StallDesignerPage() {
                         geometry: parseGeometry(s.geometry),
                         priceCents: s.priceCents,
                         size: s.size || 'MEDIUM',
-                        category: s.type || 'RETAIL',
+                        category: s.category || 'RETAIL',
                         isAvailable: !s.reserved,
                         sqFt: s.sqFt,
                     }));
@@ -118,12 +118,16 @@ export default function StallDesignerPage() {
                     id: s.id, name: s.name, hallName: s.hallName,
                     geometry: typeof s.geometry === 'object' ? JSON.stringify(s.geometry) : s.geometry,
                     finalPriceCents: s.priceCents,
+                    size: s.size,
+                    category: s.category, // Use existing category
                 })),
                 ...currentStalls.map(s => ({
                     id: s.id > 10_000_000_000 ? undefined : s.id, // Drop fake IDs for new stalls
                     name: s.name, hallName: hall.name,
                     geometry: JSON.stringify(s.geometry),
                     finalPriceCents: s.priceCents,
+                    size: s.size,
+                    category: s.category,
                 })),
             ];
 

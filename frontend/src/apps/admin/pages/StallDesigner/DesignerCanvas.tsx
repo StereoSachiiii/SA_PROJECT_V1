@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useDesigner } from './DesignerContext';
 import { getDrawRect, stallColor, formatPrice, toPercent, DesignerStall, DesignerZone, DesignerInfluence } from './types';
 
@@ -15,16 +15,24 @@ export function DesignerCanvas() {
     } = useDesigner();
 
     const overlayRef = useRef<HTMLDivElement>(null);
-    const [dragData, setDragData] = useState<{ id: string | number, type: 'STALL' | 'ZONE' | 'INFLUENCE', offsetX: number, offsetY: number } | null>(null);
+    const [dragData, setDragData] = useState<{ id: string | number, type: 'STALL' | 'ZONE' | 'INFLUENCE', offsetX: number, offsetY: number, hasMoved: boolean } | null>(null);
+
+
+
+    // Failsafe: clear drag data if mouse is released anywhere outside the canvas
+    useEffect(() => {
+        const handleGlobalMouseUp = () => {
+            setDragData(null);
+        };
+        window.addEventListener('mouseup', handleGlobalMouseUp);
+        return () => window.removeEventListener('mouseup', handleGlobalMouseUp);
+    }, []);
 
     const handleItemMouseDown = (e: React.MouseEvent, id: string | number, type: 'STALL' | 'ZONE' | 'INFLUENCE', itemX: number, itemY: number) => {
         e.stopPropagation();
-        if (type === 'STALL') {
-            setEditingStallId(id as number);
-        }
         if (!overlayRef.current) return;
         const pos = toPercent(e, overlayRef.current);
-        setDragData({ id, type, offsetX: pos.x - itemX, offsetY: pos.y - itemY });
+        setDragData({ id, type, offsetX: pos.x - itemX, offsetY: pos.y - itemY, hasMoved: false });
     };
 
     const handleMouseDown = (e: React.MouseEvent) => {
@@ -44,6 +52,11 @@ export function DesignerCanvas() {
             const newX = pos.x - dragData.offsetX;
             const newY = pos.y - dragData.offsetY;
 
+            // Mark as moved to prevent click action
+            if (!dragData.hasMoved) {
+                setDragData(prev => prev ? { ...prev, hasMoved: true } : null);
+            }
+
             if (dragData.type === 'STALL') {
                 setStalls(prev => prev.map(s => s.id === dragData.id ? { ...s, geometry: { ...s.geometry, x: newX, y: newY } } : s));
             } else if (dragData.type === 'ZONE') {
@@ -61,6 +74,9 @@ export function DesignerCanvas() {
 
     const handleMouseUp = () => {
         if (dragData) {
+            if (!dragData.hasMoved && dragData.type === 'STALL') {
+                setEditingStallId(dragData.id as number);
+            }
             setDragData(null);
             return;
         }

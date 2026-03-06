@@ -18,6 +18,7 @@ public class StallResponse {
     private String name;
     private String size;
     private String type;
+    private String category;
     private Long priceCents;
     private Integer proximityScore;
     private String hallName;
