@@ -70,7 +70,11 @@ export const EventManagementTable = ({
                                             </span>
                                             <span className="w-1 h-1 bg-slate-200 rounded-full"></span>
                                             <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
-                                                Starting {new Date(evt.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                                Starting {(() => {
+                                                    if (!evt.startDate) return 'TBD';
+                                                    const d = new Date(evt.startDate);
+                                                    return isNaN(d.getTime()) ? evt.startDate : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+                                                })()}
                                             </span>
                                         </div>
                                     </td>

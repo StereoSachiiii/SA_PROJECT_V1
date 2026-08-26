@@ -13,11 +13,14 @@ import org.springframework.security.access.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import com.bookfair.exception.ResourceNotFoundException;
-import com.bookfair.exception.ConflictException;
-import com.bookfair.exception.BadRequestException;
 
+/**
+ * Global Exception Handler to prevent information leakage (OWASP Top 10).
+ * Ensures internal stack traces, DB schema details, and unhandled runtime exceptions
+ * are sanitized into standardized, generic error responses.
+ */
 @RestControllerAdvice
+@lombok.extern.slf4j.Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -34,12 +37,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<Map<String, Object>> handleAuthenticationException(AuthenticationException ex, HttpServletRequest request) {
-        return buildErrorResponse(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "Invalid username or password", request, null);
+        return buildErrorResponse(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "Invalid authentication credentials", request, null);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Map<String, Object>> handleAccessDeniedException(AccessDeniedException ex, HttpServletRequest request) {
-        return buildErrorResponse(HttpStatus.FORBIDDEN, "FORBIDDEN", ex.getMessage(), request, null);
+        return buildErrorResponse(HttpStatus.FORBIDDEN, "FORBIDDEN", "Access Denied: You do not have permission to perform this action", request, null);
     }
 
     @ExceptionHandler(IllegalStateException.class)
@@ -69,7 +72,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, Object>> handleRuntimeExceptions(RuntimeException ex, HttpServletRequest request) {
-        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", ex.getMessage(), request, null);
+        log.error("Unhandled runtime exception on path {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "An internal error occurred while processing your request. Please contact support.", request, null);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex, HttpServletRequest request) {
+        log.error("Unhandled exception on path {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "An unexpected internal server error occurred. Please try again later.", request, null);
     }
 
     private ResponseEntity<Map<String, Object>> buildErrorResponse(HttpStatus status, String code, String message, HttpServletRequest request, Map<String, Object> details) {

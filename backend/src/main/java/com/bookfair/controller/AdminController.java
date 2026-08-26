@@ -12,8 +12,11 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @RestController
 @RequestMapping("/api/v1/admin")
+@PreAuthorize("hasRole('ORGANIZER') or hasRole('ADMIN')")
 @RequiredArgsConstructor
 public class AdminController {
 

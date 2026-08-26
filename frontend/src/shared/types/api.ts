@@ -246,9 +246,16 @@ export interface Reservation {
 }
 
 export interface ReservationRequest {
-    userId: number;
-    eventId: number; // Mandatory for V4 atomic booking
-    stallIds: number[];
+    eventName?: string;
+    reservationDate?: string;
+    stallType?: 'STANDARD' | 'PREMIUM' | 'CORNER';
+    stallSize?: 'SMALL' | 'MEDIUM' | 'LARGE';
+    stallCount?: number;
+    businessCategory?: string;
+    specialComments?: string;
+    userId?: number;
+    eventId?: number; // Mandatory for V4 atomic booking
+    stallIds?: number[];
 }
 
 export interface CheckInRequest {

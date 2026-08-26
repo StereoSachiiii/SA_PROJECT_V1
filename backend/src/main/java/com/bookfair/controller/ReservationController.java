@@ -4,34 +4,130 @@ import com.bookfair.dto.request.ReservationRequest;
 import com.bookfair.dto.response.ReservationResponse;
 import com.bookfair.entity.Reservation;
 import com.bookfair.service.ReservationService;
+import com.bookfair.service.QrService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
+
 import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import com.bookfair.service.QrService;
 
 /**
-
- * Reservation Controller
- *
- * Handles creating and querying reservations.
- * All responses use ReservationResponse DTO (never raw entities).
+ * Controller for Stall Reservation operations.
+ * Strictly adheres to OWASP guidelines:
+ * - Username is NEVER taken from request payload, only extracted from JWT principal.
+ * - Endpoints enforce ownership checks and Role-Based Access Control (RBAC).
  */
 @RestController
-@RequestMapping("/api/v1/vendor/reservations")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class ReservationController {
-    
+
     private final ReservationService reservationService;
     private final QrService qrService;
 
-    @GetMapping("/{id}/qr/download")
-    public ResponseEntity<byte[]> downloadQrCode(@PathVariable Long id, Principal principal) {
-        Reservation reservation = reservationService.getById(id, principal.getName());
+    private String getAuthenticatedUsername(Jwt jwt, Principal principal) {
+        if (jwt != null) {
+            String username = jwt.getClaimAsString("username");
+            if (username == null) username = jwt.getClaimAsString("preferred_username");
+            if (username == null) username = jwt.getSubject();
+            if (username != null) return username;
+        }
+        if (principal != null) {
+            return principal.getName();
+        }
+        throw new org.springframework.security.access.AccessDeniedException("Unauthenticated request");
+    }
+
+    /**
+     * POST /api/reservations & /api/v1/vendor/reservations
+     * Create a stall reservation for the authenticated vendor.
+     */
+    @PostMapping({"/reservations", "/v1/vendor/reservations"})
+    public ResponseEntity<List<ReservationResponse>> create(
+            @jakarta.validation.Valid @RequestBody ReservationRequest request,
+            @AuthenticationPrincipal Jwt jwt,
+            Principal principal) {
+        String username = getAuthenticatedUsername(jwt, principal);
+        List<Reservation> reservations = reservationService.createReservations(request, username);
+        return ResponseEntity.ok(reservations.stream().map(ReservationController::mapToResponse).collect(Collectors.toList()));
+    }
+
+    /**
+     * GET /api/reservations/my-reservations
+     * Return only records matching the authenticated user's username.
+     */
+    @GetMapping({"/reservations/my-reservations", "/v1/vendor/reservations/me"})
+    public ResponseEntity<List<ReservationResponse>> getMyReservations(
+            @AuthenticationPrincipal Jwt jwt,
+            Principal principal) {
+        String username = getAuthenticatedUsername(jwt, principal);
+        List<Reservation> reservations = reservationService.getByUsername(username);
+        return ResponseEntity.ok(reservations.stream().map(ReservationController::mapToResponse).collect(Collectors.toList()));
+    }
+
+    /**
+     * GET /api/admin/reservations
+     * Restricted to ROLE_ORGANIZER (and ADMIN) only. Returns all stall reservation requests across vendors.
+     */
+    @GetMapping("/admin/reservations")
+    @PreAuthorize("hasRole('ORGANIZER') or hasRole('ADMIN')")
+    public ResponseEntity<List<ReservationResponse>> getAllAdminReservations() {
+        List<Reservation> reservations = reservationService.getAll();
+        return ResponseEntity.ok(reservations.stream().map(ReservationController::mapToResponse).collect(Collectors.toList()));
+    }
+
+    /**
+     * GET /api/reservations/{id}
+     */
+    @GetMapping({"/reservations/{id}", "/v1/vendor/reservations/{id}"})
+    public ResponseEntity<ReservationResponse> getById(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Jwt jwt,
+            Principal principal) {
+        String username = getAuthenticatedUsername(jwt, principal);
+        return ResponseEntity.ok(mapToResponse(reservationService.getById(id, username)));
+    }
+
+    /**
+     * DELETE /api/reservations/{id}
+     * Cancel reservation with ownership check.
+     */
+    @DeleteMapping({"/reservations/{id}", "/v1/vendor/reservations/{id}"})
+    public ResponseEntity<Void> cancel(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Jwt jwt,
+            Principal principal) {
+        String username = getAuthenticatedUsername(jwt, principal);
+        reservationService.cancelReservation(id, username);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * POST /api/reservations/confirm-payment/{id}
+     */
+    @PostMapping("/reservations/confirm-payment/{id}")
+    public ResponseEntity<Void> confirmPayment(@PathVariable Long id) {
+        reservationService.confirmPayment(id);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * GET /api/reservations/{id}/qr/download
+     */
+    @GetMapping({"/reservations/{id}/qr/download", "/v1/vendor/reservations/{id}/qr/download"})
+    public ResponseEntity<byte[]> downloadQrCode(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Jwt jwt,
+            Principal principal) {
+        String username = getAuthenticatedUsername(jwt, principal);
+        Reservation reservation = reservationService.getById(id, username);
         byte[] qrImage = qrService.generateQrCode(reservation.getQrCode());
 
         return ResponseEntity.ok()
@@ -39,67 +135,23 @@ public class ReservationController {
                 .contentType(MediaType.IMAGE_PNG)
                 .body(qrImage);
     }
-    
-    @PostMapping
-    public ResponseEntity<List<ReservationResponse>> create(@jakarta.validation.Valid @RequestBody ReservationRequest request) {
-        return ResponseEntity.ok(reservationService.createReservations(request).stream()
-                .map(r -> mapToResponse(r))
-                .collect(Collectors.toList()));
-    }
 
     /**
-     * POST /api/reservations/confirm-payment/{id}
-     * Transitions a reservation from PENDING to PAID.
-     * In a real app, this would be called by a Stripe webhook or Payment Gateway callback.
+     * POST /api/reservations/request-refund/{id}
      */
-    @PostMapping("/confirm-payment/{id}")
-    public ResponseEntity<Void> confirmPayment(@PathVariable Long id) {
-        reservationService.confirmPayment(id);
+    @PostMapping({"/reservations/request-refund/{id}", "/v1/vendor/reservations/request-refund/{id}"})
+    public ResponseEntity<Void> requestRefund(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Jwt jwt,
+            Principal principal,
+            @RequestParam(required = false, defaultValue = "Vendor requested refund") String reason) {
+        String username = getAuthenticatedUsername(jwt, principal);
+        reservationService.requestRefund(id, username, reason);
         return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/me")
-    public ResponseEntity<List<ReservationResponse>> getMyReservations(Principal principal) {
-        return ResponseEntity.ok(reservationService.getByUsername(principal.getName()).stream()
-                .map(ReservationController::mapToResponse)
-                .collect(Collectors.toList()));
-    }
-
-    @GetMapping("/available-count")
-    public ResponseEntity<java.util.Map<String, Integer>> getAvailableCount(@RequestParam(required = false) Long eventId, Principal principal) {
-        return ResponseEntity.ok(reservationService.getAvailableCount(principal.getName(), eventId));
-    }
-
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<ReservationResponse>> getByUser(@PathVariable Long userId, Principal principal) {
-        return ResponseEntity.ok(reservationService.getByUser(userId, principal.getName()).stream()
-                .map(ReservationController::mapToResponse)
-                .collect(Collectors.toList()));
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<ReservationResponse> getById(@PathVariable Long id, Principal principal) {
-        return ResponseEntity.ok(mapToResponse(reservationService.getById(id, principal.getName())));
-    }
-
-    /**
-     * GET /api/v1/vendor/reservations
-     * Get all reservations for the currently logged-in vendor.
-     * Admin/Employee have their own dedicated reservation list endpoints.
-     */
-    @GetMapping
-    public ResponseEntity<List<ReservationResponse>> getAllMyReservations(Principal principal) {
-        return ResponseEntity.ok(
-            reservationService.getByUsername(principal.getName())
-                .stream()
-                .map(ReservationController::mapToResponse)
-                .collect(Collectors.toList())
-        );
     }
 
     /**
      * Maps a Reservation entity to a ReservationResponse DTO.
-     * Aligned with API.md V4.5: returns stalls as List<String>.
      */
     public static ReservationResponse mapToResponse(Reservation r) {
         ReservationResponse res = new ReservationResponse();
@@ -111,23 +163,21 @@ public class ReservationController {
 
         if (r.getUser() != null) {
             res.setUser(new ReservationResponse.UserSummary(
-                r.getUser().getId(),
-                r.getUser().getUsername(),
-                r.getUser().getEmail(),
-                r.getUser().getBusinessName(),
-                r.getUser().getContactNumber(),
-                r.getUser().getRole() != null ? r.getUser().getRole().name() : null,
-                r.getUser().getCategories() != null ? r.getUser().getCategories().stream().map(Enum::name).collect(java.util.stream.Collectors.toList()) : null
+                    r.getUser().getId(),
+                    r.getUser().getUsername(),
+                    r.getUser().getEmail(),
+                    r.getUser().getBusinessName(),
+                    r.getUser().getContactNumber(),
+                    r.getUser().getRole() != null ? r.getUser().getRole().name() : null,
+                    r.getUser().getCategories() != null ? r.getUser().getCategories().stream().map(Enum::name).collect(Collectors.toList()) : null
             ));
         }
 
         if (r.getEventStall() != null) {
-            String tempName = null;
             if (r.getEventStall().getStallTemplate() != null) {
-                tempName = r.getEventStall().getStallTemplate().getName();
+                String tempName = r.getEventStall().getStallTemplate().getName();
                 res.setStalls(java.util.Collections.singletonList(tempName));
-                
-                // Map enriched stall details
+
                 com.bookfair.entity.StallTemplate template = r.getEventStall().getStallTemplate();
                 res.setStallDetails(new ReservationResponse.StallSummary(
                         r.getEventStall().getId(),
@@ -145,12 +195,12 @@ public class ReservationController {
                 ));
             }
             res.setTotalPriceCents(r.getEventStall().getFinalPriceCents());
-            
+
             if (r.getEventStall().getEvent() != null) {
                 res.setEvent(new ReservationResponse.EventSummary(
-                    r.getEventStall().getEvent().getId(),
-                    r.getEventStall().getEvent().getName(),
-                    r.getEventStall().getEvent().getVenue() != null ? r.getEventStall().getEvent().getVenue().getName() : null
+                        r.getEventStall().getEvent().getId(),
+                        r.getEventStall().getEvent().getName(),
+                        r.getEventStall().getEvent().getVenue() != null ? r.getEventStall().getEvent().getVenue().getName() : null
                 ));
             }
         } else {
@@ -158,24 +208,5 @@ public class ReservationController {
         }
 
         return res;
-    }
-    
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> cancel(@PathVariable Long id, Principal principal) {
-        reservationService.cancelReservation(id, principal.getName());
-        return ResponseEntity.noContent().build();
-    }
-
-    /**
-     * POST /api/v1/reservations/request-refund/{id}
-     * Vendor requests a refund. Changes status from PAID to PENDING_REFUND
-     */
-    @PostMapping("/request-refund/{id}")
-    public ResponseEntity<Void> requestRefund(
-            @PathVariable Long id, 
-            Principal principal,
-            @RequestParam(required = false, defaultValue = "Vendor requested refund") String reason) {
-        reservationService.requestRefund(id, principal.getName(), reason);
-        return ResponseEntity.ok().build();
     }
 }

@@ -102,11 +102,18 @@ export default function Dashboard() {
         }
     };
 
+    const formatDateForInput = (dateStr?: string) => {
+        if (!dateStr) return '';
+        if (dateStr.includes('T')) return dateStr.split('T')[0];
+        const d = new Date(dateStr);
+        return isNaN(d.getTime()) ? '' : d.toISOString().split('T')[0];
+    };
+
     const handleStartEdit = (event: Event) => {
         setEventData({
             ...event,
-            startDate: new Date(event.startDate).toISOString().split('T')[0],
-            endDate: new Date(event.endDate).toISOString().split('T')[0]
+            startDate: formatDateForInput(event.startDate),
+            endDate: formatDateForInput(event.endDate)
         });
         setShowEditModal(true);
     };

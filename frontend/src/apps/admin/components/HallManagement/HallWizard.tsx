@@ -133,7 +133,13 @@ export const HallWizard: React.FC<HallWizardProps> = ({
                             <div className="p-3 bg-blue-50 text-blue-600 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-colors">
                                 <Calendar size={20} />
                             </div>
-                            <span className="text-[10px] font-bold uppercase text-gray-400 tracking-tighter">{new Date(event.startDate).getFullYear()}</span>
+                            <span className="text-[10px] font-bold uppercase text-gray-400 tracking-tighter">
+                                {(() => {
+                                    if (!event.startDate) return '';
+                                    const y = new Date(event.startDate).getFullYear();
+                                    return isNaN(y) ? '' : y;
+                                })()}
+                            </span>
                         </div>
                         <h3 className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{event.name}</h3>
                         <p className="text-gray-500 text-xs mt-1 font-medium">{event.location}</p>

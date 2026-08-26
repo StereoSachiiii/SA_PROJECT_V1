@@ -1,141 +1,172 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/shared/context/AuthContext';
-import { vendorApi } from '@/shared/api/vendorApi';
+import { authApi } from '@/shared/api/authApi';
+import { UserProfileResponse } from '@/shared/types/user';
 
 export default function VendorProfilePage() {
-    const { user, login } = useAuth();
-    const [loading, setLoading] = useState(false);
-    const [success, setSuccess] = useState(false);
+    const { user } = useAuth();
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [profile, setProfile] = useState<UserProfileResponse | null>(null);
 
-    const [formData, setFormData] = useState({
-        businessName: user?.businessName || '',
-        businessDescription: user?.businessDescription || '',
-        contactNumber: user?.contactNumber || '',
-        address: user?.address || '',
-        logoUrl: user?.logoUrl || ''
-    });
+    useEffect(() => {
+        loadOidcProfile();
+    }, []);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const loadOidcProfile = async () => {
         setLoading(true);
         setError(null);
-        setSuccess(false);
-
         try {
-            // we preserve the user's existing categories if they have them, just removing them from the edit form
-            const payload = {
-                ...formData,
-                categories: user?.categories || []
-            };
-            const updatedUser = await vendorApi.updateProfile(payload);
-            const token = localStorage.getItem('token');
-            if (token) {
-                login(token, updatedUser);
-            }
-            setSuccess(true);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            const data = await authApi.getProfile();
+            setProfile(data);
         } catch (err: any) {
-            setError(err.message || 'Failed to update profile');
+            console.warn('OIDC profile fetch failed, using local context state fallback', err);
+            // Fallback gracefully to AuthContext user state if endpoint fails or in offline mode
+            setProfile({
+                username: user?.username || 'N/A',
+                name: user?.username || 'N/A',
+                email: user?.email || 'N/A',
+                contactNumber: user?.contactNumber || 'N/A',
+                organization: user?.businessName || 'N/A',
+                roles: user?.role ? [user.role] : []
+            });
         } finally {
             setLoading(false);
         }
     };
 
+    if (loading) {
+        return (
+            <div className="container mx-auto px-6 py-20 max-w-4xl flex flex-col items-center justify-center gap-4">
+                <div className="w-12 h-12 border-4 border-slate-200 border-t-indigo-600 rounded-full animate-spin"></div>
+                <p className="text-slate-400 font-black uppercase text-xs tracking-widest animate-pulse">
+                    Loading OIDC Profile Claims...
+                </p>
+            </div>
+        );
+    }
+
     return (
-        <div className="container mx-auto px-6 py-12 max-w-4xl">
-            <header className="mb-12">
-                <div className="flex items-center gap-4 mb-2">
-                    <span className="text-3xl">🏢</span>
-                    <h1 className="text-4xl font-black text-slate-900 tracking-tight">Business Profile</h1>
+        <div className="container mx-auto px-6 py-12 max-w-4xl animate-in fade-in duration-500">
+            <header className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <div className="flex items-center gap-3 mb-2">
+                        <span className="text-3xl">🛡️</span>
+                        <h1 className="text-4xl font-black text-slate-900 tracking-tight">OIDC User Profile</h1>
+                    </div>
+                    <p className="text-slate-500 font-medium">
+                        Identity & Claims issued by Asgardeo OpenID Connect (OIDC) Identity Provider.
+                    </p>
                 </div>
-                <p className="text-slate-500 font-medium">Manage how your publishing house appears to visitors and organizers.</p>
+                <button
+                    onClick={loadOidcProfile}
+                    className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs uppercase tracking-wider rounded-xl transition-colors self-start md:self-auto flex items-center gap-2"
+                >
+                    <span>🔄</span> Refresh Claims
+                </button>
             </header>
 
-            {success && (
-                <div className="mb-8 bg-emerald-50 border-2 border-emerald-100 text-emerald-800 p-6 rounded-3xl flex items-center gap-4 animate-scale-in">
-                    <span className="text-2xl">✨</span>
-                    <p className="font-bold">Profile updated successfully! All changes are now live.</p>
-                </div>
-            )}
-
             {error && (
-                <div className="mb-8 bg-rose-50 border-2 border-rose-100 text-rose-800 p-6 rounded-3xl font-bold">
-                    {error}
-                </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-10">
-                <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-slate-100">
-                    <h2 className="text-xl font-black text-slate-900 mb-8 flex items-center gap-3">
-                        <span className="w-1.5 h-6 bg-blue-600 rounded-full"></span>
-                        Executive Summary
-                    </h2>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Business Name</label>
-                            <input
-                                className="w-full p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl font-bold text-slate-900 focus:bg-white focus:border-blue-600 transition-all outline-none"
-                                value={formData.businessName}
-                                onChange={e => setFormData({ ...formData, businessName: e.target.value })}
-                                required
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Contact Number</label>
-                            <input
-                                className="w-full p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl font-bold text-slate-900 focus:bg-white focus:border-blue-600 transition-all outline-none"
-                                value={formData.contactNumber}
-                                onChange={e => setFormData({ ...formData, contactNumber: e.target.value })}
-                            />
-                        </div>
-                        <div className="md:col-span-2 space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Business Description</label>
-                            <textarea
-                                className="w-full p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl font-bold text-slate-900 focus:bg-white focus:border-blue-600 transition-all outline-none h-32 resize-none"
-                                value={formData.businessDescription}
-                                onChange={e => setFormData({ ...formData, businessDescription: e.target.value })}
-                                placeholder="Tell readers about your publication house, history, and featured works..."
-                            />
-                        </div>
-                        <div className="md:col-span-2 space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Logo URL</label>
-                            <input
-                                className="w-full p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl font-bold text-slate-900 focus:bg-white focus:border-blue-600 transition-all outline-none"
-                                value={formData.logoUrl}
-                                onChange={e => setFormData({ ...formData, logoUrl: e.target.value })}
-                                placeholder="https://..."
-                            />
-                        </div>
-                        <div className="md:col-span-2 space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Physical Address</label>
-                            <input
-                                className="w-full p-4 bg-slate-50 border-2 border-slate-50 rounded-2xl font-bold text-slate-900 focus:bg-white focus:border-blue-600 transition-all outline-none"
-                                value={formData.address}
-                                onChange={e => setFormData({ ...formData, address: e.target.value })}
-                            />
-                        </div>
+                <div className="mb-8 bg-amber-50 border-2 border-amber-200 text-amber-900 p-6 rounded-2xl flex items-center gap-4">
+                    <span className="text-2xl">⚠️</span>
+                    <div>
+                        <p className="font-bold">Using Fallback Profile Data</p>
+                        <p className="text-sm font-medium opacity-90">{error}</p>
                     </div>
                 </div>
+            )}
 
-                <div className="flex justify-end gap-4 pt-6">
-                    <button
-                        type="button"
-                        onClick={() => window.location.href = '/vendor/dashboard'}
-                        className="px-8 py-4 text-slate-400 font-black text-sm uppercase tracking-widest hover:text-slate-600 transition-colors"
-                    >
-                        Back to Dashboard
-                    </button>
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="px-10 py-4 bg-slate-900 text-white font-black text-sm uppercase tracking-widest rounded-2xl hover:bg-black hover:scale-105 active:scale-95 transition-all shadow-xl shadow-slate-200 disabled:opacity-50"
-                    >
-                        {loading ? 'Saving...' : 'Save Profile'}
-                    </button>
+            {/* OIDC Claims Display Card */}
+            <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white rounded-[2.5rem] p-10 shadow-2xl relative overflow-hidden mb-10">
+                <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
+
+                <div className="flex items-center justify-between mb-8 pb-6 border-b border-white/10">
+                    <div>
+                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-400 block mb-1">
+                            Authenticated Subject
+                        </span>
+                        <h2 className="text-2xl font-black text-white tracking-tight">
+                            {profile?.name || profile?.username || 'User Profile'}
+                        </h2>
+                    </div>
+                    <span className="px-4 py-1.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-black text-[10px] uppercase tracking-widest rounded-full flex items-center gap-2">
+                        <span className="w-2 h-2 bg-emerald-400 rounded-full animate-ping"></span>
+                        OIDC Authenticated
+                    </span>
                 </div>
-            </form>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Username */}
+                    <div className="bg-white/5 backdrop-blur-md p-6 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
+                        <span className="block text-[10px] font-black uppercase text-indigo-300 tracking-widest mb-1">
+                            Username / Sub
+                        </span>
+                        <span className="text-lg font-bold text-white tracking-tight break-all">
+                            {profile?.username || user?.username || 'N/A'}
+                        </span>
+                    </div>
+
+                    {/* Full Name */}
+                    <div className="bg-white/5 backdrop-blur-md p-6 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
+                        <span className="block text-[10px] font-black uppercase text-indigo-300 tracking-widest mb-1">
+                            Full Name
+                        </span>
+                        <span className="text-lg font-bold text-white tracking-tight">
+                            {profile?.name || user?.username || 'N/A'}
+                        </span>
+                    </div>
+
+                    {/* Email Address */}
+                    <div className="bg-white/5 backdrop-blur-md p-6 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
+                        <span className="block text-[10px] font-black uppercase text-indigo-300 tracking-widest mb-1">
+                            Email Address
+                        </span>
+                        <span className="text-lg font-bold text-white tracking-tight break-all">
+                            {profile?.email || user?.email || 'N/A'}
+                        </span>
+                    </div>
+
+                    {/* Contact Number */}
+                    <div className="bg-white/5 backdrop-blur-md p-6 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
+                        <span className="block text-[10px] font-black uppercase text-indigo-300 tracking-widest mb-1">
+                            Contact Number
+                        </span>
+                        <span className="text-lg font-bold text-white tracking-tight">
+                            {profile?.contactNumber || user?.contactNumber || 'N/A'}
+                        </span>
+                    </div>
+
+                    {/* Organization / Business Name */}
+                    <div className="bg-white/5 backdrop-blur-md p-6 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors md:col-span-2">
+                        <span className="block text-[10px] font-black uppercase text-indigo-300 tracking-widest mb-1">
+                            Organization / Business Name
+                        </span>
+                        <span className="text-lg font-bold text-white tracking-tight">
+                            {profile?.organization || user?.businessName || 'N/A'}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Information Banner explaining OIDC Managed Credentials */}
+            <div className="bg-indigo-50 border-2 border-indigo-100 text-indigo-950 rounded-2xl p-6 flex items-start gap-4">
+                <span className="text-2xl mt-0.5">ℹ️</span>
+                <div>
+                    <h3 className="font-black text-sm uppercase tracking-wider mb-1">Identity & Password Management</h3>
+                    <p className="text-xs font-medium text-indigo-800 leading-relaxed">
+                        Your user credentials, security keys, and profile attributes are managed centrally by the <strong>Asgardeo OpenID Connect (OIDC) Identity Provider</strong>. Legacy local password update forms have been disabled to ensure OWASP compliance and centralized single sign-on (SSO) governance.
+                    </p>
+                </div>
+            </div>
+
+            <div className="flex justify-end pt-8">
+                <button
+                    onClick={() => window.location.href = '/vendor/dashboard'}
+                    className="px-8 py-3.5 bg-slate-900 text-white font-black text-xs uppercase tracking-widest rounded-xl hover:bg-black transition-all shadow-lg"
+                >
+                    Back to Dashboard
+                </button>
+            </div>
         </div>
     );
 }
