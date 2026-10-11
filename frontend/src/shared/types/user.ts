@@ -7,6 +7,15 @@ export interface User {
     role: 'ADMIN' | 'VENDOR'
 }
 
+export interface UserProfileResponse {
+    username?: string;
+    name?: string;
+    email?: string;
+    contactNumber?: string;
+    organization?: string;
+    roles?: string[];
+}
+
 export interface AuthResponse {
     token: string
     id: number

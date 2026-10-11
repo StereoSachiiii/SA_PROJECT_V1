@@ -15,6 +15,10 @@ import org.springframework.lang.NonNull;
 @Repository
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
 
+    /** Find all reservations for a specific user by username (parameterized to prevent SQL injection). */
+    @Query("SELECT r FROM Reservation r LEFT JOIN FETCH r.eventStall es LEFT JOIN FETCH r.user u WHERE u.username = :username")
+    List<Reservation> findByUserUsername(@org.springframework.data.repository.query.Param("username") String username);
+
     /** Find all reservations for a specific user (with stall and user data eager-loaded). */
     @Query("SELECT r FROM Reservation r LEFT JOIN FETCH r.eventStall es LEFT JOIN FETCH es.stallTemplate st LEFT JOIN FETCH st.hall h LEFT JOIN FETCH h.building b LEFT JOIN FETCH r.user WHERE r.user.id = :userId")
     List<Reservation> findByUserId(Long userId);

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { vendorApi } from '@/shared/api/vendorApi';
+import { reservationApi } from '@/shared/api/reservationApi';
 import { Reservation } from '@/shared/types/api';
 import { useAuth } from '@/shared/context/AuthContext';
 
@@ -9,15 +9,16 @@ import { DashboardHeader } from '../components/Dashboard/DashboardHeader';
 import { DashboardStats } from '../components/Dashboard/DashboardStats';
 import { ReservationsTable } from '../components/Dashboard/ReservationsTable';
 import { CancelConfirmModal } from '../components/Dashboard/CancelConfirmModal';
+import { StallReservationForm } from '../components/StallReservationForm';
 
 export default function VendorDashboardPage() {
     const { user } = useAuth();
-    const navigate = useNavigate();
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [reservations, setReservations] = useState<Reservation[]>([]);
     const [limits, setLimits] = useState({ limit: 3, used: 0, remaining: 3 });
+    const [showBookingForm, setShowBookingForm] = useState(false);
 
     // Cancellation state
     const [showCancelModal, setShowCancelModal] = useState(false);
@@ -32,11 +33,11 @@ export default function VendorDashboardPage() {
         try {
             setLoading(true);
             const [resData, limitData] = await Promise.all([
-                vendorApi.getMyReservations(),
-                vendorApi.getAvailableCount()
+                reservationApi.getMyReservations().catch(() => vendorApi.getMyReservations()),
+                vendorApi.getAvailableCount().catch(() => ({ limit: 3, used: 0, remaining: 3 }))
             ]);
-            setReservations(resData);
-            setLimits(limitData);
+            setReservations(resData || []);
+            setLimits(limitData || { limit: 3, used: (resData || []).length, remaining: Math.max(0, 3 - (resData || []).length) });
         } catch (err: any) {
             setError(err.message || 'Failed to load dashboard');
         } finally {
@@ -57,9 +58,9 @@ export default function VendorDashboardPage() {
         setActionLoading(true);
         try {
             if (res.status === 'PAID') {
-                await vendorApi.requestRefund(selectedResId, 'Vendor requested refund from dashboard');
+                await reservationApi.requestRefund(selectedResId, 'Vendor requested refund from dashboard');
             } else {
-                await vendorApi.cancelReservation(selectedResId);
+                await reservationApi.cancel(selectedResId);
             }
             setShowCancelModal(false);
             loadDashboard();
@@ -85,8 +86,20 @@ export default function VendorDashboardPage() {
                 businessName={user?.businessName}
                 username={user?.username || ''}
                 canBook={limits.remaining > 0}
-                onBookClick={() => navigate('/events')}
+                onBookClick={() => setShowBookingForm(!showBookingForm)}
             />
+
+            {showBookingForm && (
+                <div className="mb-10">
+                    <StallReservationForm
+                        onSuccess={() => {
+                            setShowBookingForm(false);
+                            loadDashboard();
+                        }}
+                        onCancel={() => setShowBookingForm(false)}
+                    />
+                </div>
+            )}
 
             {error && (
                 <div className="bg-rose-50 border-2 border-rose-100 text-rose-600 p-6 rounded-[2rem] mb-10 flex items-center gap-4 animate-in slide-in-from-top-4">

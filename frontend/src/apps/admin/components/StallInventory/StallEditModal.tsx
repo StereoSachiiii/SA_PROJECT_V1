@@ -60,12 +60,12 @@ export const StallEditModal: React.FC<StallEditModalProps> = ({
                         <div>
                             <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Square Feet</label>
                             <input type="number" className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
-                                value={form.sqFt || ''} onChange={e => onFormChange({ ...form, sqFt: parseFloat(e.target.value) })} />
+                                value={form.sqFt ?? ''} onChange={e => onFormChange({ ...form, sqFt: e.target.value === '' ? undefined : (parseFloat(e.target.value) || 0) })} />
                         </div>
                         <div>
                             <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Price (Cents)</label>
                             <input type="number" className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
-                                value={form.basePriceCents || ''} onChange={e => onFormChange({ ...form, basePriceCents: parseInt(e.target.value) })} />
+                                value={form.basePriceCents ?? ''} onChange={e => onFormChange({ ...form, basePriceCents: e.target.value === '' ? undefined : (parseInt(e.target.value, 10) || 0) })} />
                         </div>
                     </div>
                     <div>
